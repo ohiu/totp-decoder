@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Decoder Tools">
+  <rect width="512" height="512" rx="112" fill="#f8faf7"/>
+  <rect x="74" y="74" width="364" height="364" rx="82" fill="#ffffff" stroke="#d8ded6" stroke-width="12"/>
+  <circle cx="156" cy="156" r="34" fill="#43a35b"/>
+  <path d="M235 154h112M235 214h76M156 274h200M156 334h132" fill="none" stroke="#182018" stroke-width="34" stroke-linecap="round"/>
+  <path d="M156 214h26" fill="none" stroke="#7d8a7f" stroke-width="34" stroke-linecap="round"/>
+</svg>

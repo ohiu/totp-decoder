@@ -1,0 +1,20 @@
+{
+  "name": "Decoder Tools",
+  "short_name": "Decoders",
+  "description": "Local decoder and converter tools for Base64, TOTP, JSON, JWT, hashes, colors, UUIDs, Unix time, and more.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8faf7",
+  "theme_color": "#f8faf7",
+  "orientation": "any",
+  "categories": ["utilities", "developer", "productivity"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
