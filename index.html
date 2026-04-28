@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
+  --page-pad: 20px;
   --bg:        oklch(0.985 0.003 85);
   --bg-sub:    oklch(0.965 0.004 85);
   --surface:   oklch(1 0 0);
@@ -50,7 +51,7 @@ body{
   font-family:var(--sans);color:var(--fg);
   background:radial-gradient(ellipse 80% 50% at 50% -5%,var(--page-glow),transparent 60%),var(--bg);
   -webkit-font-smoothing:antialiased;font-feature-settings:'ss01','cv11';
-  min-height:100dvh;padding:32px 20px;display:grid;place-items:center;align-items:safe center;justify-items:center;
+  min-height:100dvh;padding:32px var(--page-pad);display:grid;place-items:center;align-items:safe center;justify-items:center;
 }
 
 /* ── shell ── */
@@ -62,8 +63,8 @@ body{
 .wordmark .name{font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--fg-mid)}
 
 /* ── tab bar ── */
-.tabs-wrap{position:relative;margin-bottom:24px}
-.tabs{display:flex;gap:2px;background:var(--bg-sub);border:1px solid var(--line);border-radius:12px;padding:4px;overflow-x:auto;scrollbar-width:none}
+.tabs-wrap{position:relative;margin:0 0 24px 50%;width:max-content;max-width:calc(100vw - (var(--page-pad) * 2));transform:translateX(-50%)}
+.tabs{display:flex;gap:2px;width:max-content;max-width:100%;background:var(--bg-sub);border:1px solid var(--line);border-radius:12px;padding:4px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tabs-wrap::before,.tabs-wrap::after{content:"";position:absolute;top:1px;bottom:1px;width:24px;pointer-events:none;border-radius:12px;opacity:0;transition:opacity .15s;z-index:1}
 .tabs-wrap::before{left:1px;background:linear-gradient(to right,var(--bg-sub),transparent)}
@@ -335,7 +336,8 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 
 /* ══ NARROW SCREEN ══ */
 @media(max-width:400px){
-  body{padding:32px 14px 56px}
+  :root{--page-pad:14px}
+  body{padding:32px var(--page-pad) 56px}
   .entity-ref{grid-template-columns:repeat(2,1fr)}
   .strip-4{grid-template-columns:repeat(2,1fr)}
   .bigcode{font-size:46px}
@@ -355,8 +357,8 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 <div class="wordmark"><span class="dot"></span><span class="name">Decoder Tools</span></div>
 
 <div class="tabs-wrap"><nav class="tabs" role="tablist">
-  <button class="tab active" data-tab="totp">TOTP</button>
-  <button class="tab" data-tab="base64">Base64</button>
+  <button class="tab active" data-tab="base64">Base64</button>
+  <button class="tab" data-tab="totp">TOTP</button>
   <button class="tab" data-tab="url">URL</button>
   <button class="tab" data-tab="json">JSON</button>
   <button class="tab" data-tab="jwt">JWT</button>
@@ -371,7 +373,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 </nav></div>
 
 <!-- ═══════════ TOTP ═══════════ -->
-<section class="panel active" id="panel-totp">
+<section class="panel" id="panel-totp">
   <div class="phead"><h1>TOTP Code Generator</h1><p>Paste a Base32 secret — live 6-digit HMAC-SHA1 code with countdown. Nothing stored.</p></div>
   <label class="field">
     <span class="flabel"><span>Base32 Secret</span><span class="fhint" id="totp-len">0 chars</span></span>
@@ -405,7 +407,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 </section>
 
 <!-- ═══════════ BASE64 ═══════════ -->
-<section class="panel" id="panel-base64">
+<section class="panel active" id="panel-base64">
   <div class="phead"><h1>Base64</h1><p>Encode plain text to Base64 (RFC 4648) or decode back. Handles Unicode (UTF-8).</p></div>
   <div class="toggle-row">
     <button class="tog active" data-b64="encode">Encode</button>
@@ -674,7 +676,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 
 <footer>
   <span class="priv"><span class="dot"></span>All computation local · no data stored</span>
-  <span id="footer-ref">RFC 6238</span>
+  <span id="footer-ref">RFC 4648</span>
 </footer>
 </main>
 
@@ -1330,15 +1332,84 @@ const PALETTES=[
   {id:'indigo',  h:260,c:0.20,name:'Indigo'},
 ];
 let tMode=localStorage.getItem('dt-mode')||'auto';
-let tPal=localStorage.getItem('dt-pal')||'sage';
+let tPal=localStorage.getItem('dt-color')||'';
+localStorage.removeItem('dt-pal');
 function isDarkNow(){return tMode==='dark'||(tMode==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches);}
 function setThemeVar(name,value){document.documentElement.style.setProperty(name,value);}
-function applyTheme(){
-  const dark=isDarkNow(),p=PALETTES.find(x=>x.id===tPal)||PALETTES[0],{h,c}=p,root=document.documentElement;
-  root.setAttribute('data-mode',dark?'dark':'light');
+const BASE_THEMES={
+  light:{
+    '--bg':'oklch(0.985 0.003 85)',
+    '--bg-sub':'oklch(0.965 0.004 85)',
+    '--surface':'oklch(1 0 0)',
+    '--hover':'oklch(0.97 0.002 85)',
+    '--line':'oklch(0.90 0.005 85)',
+    '--line-2':'oklch(0.94 0.004 85)',
+    '--line-hover':'oklch(0.82 0.007 85)',
+    '--fg':'oklch(0.18 0.01 85)',
+    '--fg-mid':'oklch(0.45 0.008 85)',
+    '--fg-dim':'oklch(0.62 0.006 85)',
+    '--accent':'oklch(0.62 0.13 145)',
+    '--accent-bg':'oklch(0.96 0.03 145)',
+    '--accent-dim':'oklch(0.88 0.04 145)',
+    '--accent-halo':'oklch(0.62 0.13 145 / .18)',
+    '--accent-focus':'oklch(0.62 0.13 145 / .55)',
+    '--accent-ring':'oklch(0.62 0.13 145 / .09)',
+    '--on-accent':'oklch(1 0 0)',
+    '--warn':'oklch(0.70 0.16 65)',
+    '--warn-bg':'oklch(0.97 0.03 65)',
+    '--warn-line':'oklch(0.88 0.08 65)',
+    '--danger':'oklch(0.58 0.19 25)',
+    '--danger-bg':'oklch(0.97 0.03 25)',
+    '--danger-line':'oklch(0.88 0.07 25)',
+    '--danger-ring':'oklch(0.58 0.19 25 / .08)',
+    '--add-bg':'oklch(0.96 0.05 145)',
+    '--add-fg':'oklch(0.38 0.12 145)',
+    '--del-bg':'oklch(0.96 0.04 25)',
+    '--del-fg':'oklch(0.48 0.15 25)',
+    '--mark':'oklch(0.92 0.12 85)',
+    '--mark-1':'oklch(0.9 0.1 220)',
+    '--mark-2':'oklch(0.9 0.1 310)',
+    '--page-glow':'oklch(0.96 0.02 145 / .55)',
+  },
+  dark:{
+    '--bg':'oklch(0.145 0.014 85)',
+    '--bg-sub':'oklch(0.20 0.016 85)',
+    '--surface':'oklch(0.245 0.016 85)',
+    '--hover':'oklch(0.30 0.018 85)',
+    '--line':'oklch(0.36 0.016 85)',
+    '--line-2':'oklch(0.29 0.014 85)',
+    '--line-hover':'oklch(0.50 0.018 85)',
+    '--fg':'oklch(0.95 0.006 85)',
+    '--fg-mid':'oklch(0.76 0.010 85)',
+    '--fg-dim':'oklch(0.62 0.010 85)',
+    '--accent':'oklch(0.74 0.13 145)',
+    '--accent-bg':'oklch(0.31 0.08 145)',
+    '--accent-dim':'oklch(0.50 0.10 145)',
+    '--accent-halo':'oklch(0.74 0.13 145 / .28)',
+    '--accent-focus':'oklch(0.74 0.13 145 / .72)',
+    '--accent-ring':'oklch(0.74 0.13 145 / .18)',
+    '--on-accent':'oklch(0.16 0.02 145)',
+    '--warn':'oklch(0.82 0.14 72)',
+    '--warn-bg':'oklch(0.29 0.07 72)',
+    '--warn-line':'oklch(0.48 0.09 72)',
+    '--danger':'oklch(0.76 0.16 25)',
+    '--danger-bg':'oklch(0.27 0.08 25)',
+    '--danger-line':'oklch(0.48 0.12 25)',
+    '--danger-ring':'oklch(0.76 0.16 25 / .16)',
+    '--add-bg':'oklch(0.29 0.08 145)',
+    '--add-fg':'oklch(0.82 0.14 145)',
+    '--del-bg':'oklch(0.28 0.08 25)',
+    '--del-fg':'oklch(0.82 0.16 25)',
+    '--mark':'oklch(0.42 0.11 85)',
+    '--mark-1':'oklch(0.40 0.10 220)',
+    '--mark-2':'oklch(0.40 0.10 310)',
+    '--page-glow':'oklch(0.22 0.05 145 / .35)',
+  },
+};
+function paletteTheme(dark,{h,c}){
   const accentL=dark?0.74:0.58;
   const onAccent=dark||h>45&&h<110?`oklch(0.16 ${Math.min(c*.16,.035)} ${h})`:'oklch(0.99 0 0)';
-  const vars=dark?{
+  return dark?{
     '--bg':`oklch(0.145 ${Math.max(c*.12,.014)} ${h})`,
     '--bg-sub':`oklch(0.205 ${Math.max(c*.15,.018)} ${h})`,
     '--surface':`oklch(0.255 ${Math.max(c*.16,.020)} ${h})`,
@@ -1405,6 +1476,11 @@ function applyTheme(){
     '--mark-2':`oklch(0.88 0.10 310)`,
     '--page-glow':`oklch(0.94 ${Math.max(c*.20,.025)} ${h} / .62)`,
   };
+}
+function applyTheme(){
+  const dark=isDarkNow(),selected=PALETTES.find(x=>x.id===tPal),root=document.documentElement;
+  root.setAttribute('data-mode',dark?'dark':'light');
+  const vars=selected?paletteTheme(dark,selected):BASE_THEMES[dark?'dark':'light'];
   Object.entries(vars).forEach(([k,v])=>setThemeVar(k,v));
   const ICONS={
     auto:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg>`,
@@ -1420,7 +1496,17 @@ function buildPalette(){
     const sw=document.createElement('div');sw.className='tp-swatch'+(p.id===tPal?' active':'');
     sw.style.background=`linear-gradient(135deg,oklch(0.86 ${p.c*.35} ${p.h}),oklch(0.58 ${p.c} ${p.h}))`;sw.title=p.name;
     sw.innerHTML=`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 5"/></svg>`;
-    sw.addEventListener('click',()=>{tPal=p.id;localStorage.setItem('dt-pal',tPal);buildPalette();applyTheme();});
+    sw.addEventListener('click',()=>{
+      if(tPal===p.id){
+        tPal='';
+        localStorage.removeItem('dt-color');
+      }else{
+        tPal=p.id;
+        localStorage.setItem('dt-color',tPal);
+      }
+      buildPalette();
+      applyTheme();
+    });
     grid.appendChild(sw);
   });
 }
