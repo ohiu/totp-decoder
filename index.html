@@ -2,781 +2,1355 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>TOTP · Decoder</title>
+<title>Decoder Tools</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:        oklch(0.985 0.003 85);
-    --bg-sub:    oklch(0.965 0.004 85);
-    --line:      oklch(0.90 0.005 85);
-    --line-2:    oklch(0.94 0.004 85);
-    --fg:        oklch(0.18 0.01 85);
-    --fg-mid:    oklch(0.45 0.008 85);
-    --fg-dim:    oklch(0.62 0.006 85);
-    --accent:    oklch(0.62 0.13 145);
-    --accent-dim:oklch(0.88 0.04 145);
-    --warn:      oklch(0.70 0.16 65);
-    --danger:    oklch(0.58 0.19 25);
-    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
+:root {
+  --bg:        oklch(0.985 0.003 85);
+  --bg-sub:    oklch(0.965 0.004 85);
+  --line:      oklch(0.90 0.005 85);
+  --line-2:    oklch(0.94 0.004 85);
+  --fg:        oklch(0.18 0.01 85);
+  --fg-mid:    oklch(0.45 0.008 85);
+  --fg-dim:    oklch(0.62 0.006 85);
+  --accent:    oklch(0.62 0.13 145);
+  --accent-bg: oklch(0.96 0.03 145);
+  --accent-dim:oklch(0.88 0.04 145);
+  --warn:      oklch(0.70 0.16 65);
+  --warn-bg:   oklch(0.97 0.03 65);
+  --danger:    oklch(0.58 0.19 25);
+  --danger-bg: oklch(0.97 0.03 25);
+  --add-bg:    oklch(0.96 0.05 145);
+  --add-fg:    oklch(0.38 0.12 145);
+  --del-bg:    oklch(0.96 0.04 25);
+  --del-fg:    oklch(0.48 0.15 25);
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:var(--sans);color:var(--fg);
+  background: radial-gradient(ellipse 80% 50% at 50% -5%,oklch(0.96 0.02 145/.55),transparent 60%),var(--bg);
+  -webkit-font-smoothing:antialiased;font-feature-settings:'ss01','cv11';
+  min-height:100%;padding:36px 20px 64px;display:grid;place-items:start center;
+}
 
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
-  body {
-    margin: 0;
-    font-family: var(--sans);
-    color: var(--fg);
-    background:
-      radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.96 0.02 145 / 0.5), transparent 60%),
-      var(--bg);
-    -webkit-font-smoothing: antialiased;
-    font-feature-settings: 'ss01','cv11';
-    display: grid;
-    place-items: center;
-    padding: 32px 20px;
-  }
+/* ── shell ── */
+.shell{width:100%;max-width:640px}
 
-  /* ---------- top chrome ---------- */
-  .shell {
-    width: 100%;
-    max-width: 560px;
-  }
+/* ── wordmark ── */
+.wordmark{display:flex;align-items:center;gap:9px;margin-bottom:24px}
+.wordmark .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px oklch(0.62 0.13 145/.18);flex-shrink:0}
+.wordmark .name{font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--fg-mid)}
 
-  .crumb {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--fg-dim);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-bottom: 28px;
-  }
-  .crumb .dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 3px oklch(0.62 0.13 145 / 0.18);
-  }
-  .crumb .sep { opacity: 0.4; }
-  .crumb .path { color: var(--fg-mid); }
+/* ── tab bar ── */
+.tabs-wrap{position:relative;margin-bottom:24px}
+.tabs{display:flex;gap:2px;background:var(--bg-sub);border:1px solid var(--line);border-radius:12px;padding:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs-wrap::before,.tabs-wrap::after{content:"";position:absolute;top:1px;bottom:1px;width:24px;pointer-events:none;border-radius:12px;opacity:0;transition:opacity .15s;z-index:1}
+.tabs-wrap::before{left:1px;background:linear-gradient(to right,var(--bg-sub),transparent)}
+.tabs-wrap::after{right:1px;background:linear-gradient(to left,var(--bg-sub),transparent)}
+.tabs-wrap.fade-l::before{opacity:1}
+.tabs-wrap.fade-r::after{opacity:1}
+.tab{flex:0 0 auto;font-family:var(--mono);font-size:10.5px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--fg-dim);background:transparent;border:0;border-radius:8px;padding:7px 13px;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
+.tab:hover{color:var(--fg-mid);background:oklch(0.97 0.002 85)}
+.tab.active{background:#fff;color:var(--fg);box-shadow:0 1px 3px oklch(0 0 0/.07),0 0 0 1px oklch(0 0 0/.04)}
 
-  h1.title {
-    font-family: var(--sans);
-    font-weight: 600;
-    font-size: 22px;
-    letter-spacing: -0.01em;
-    margin: 0 0 6px;
-  }
-  .sub {
-    font-size: 14px;
-    color: var(--fg-mid);
-    margin: 0 0 28px;
-    line-height: 1.5;
-  }
-  .sub code {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    background: var(--bg-sub);
-    border: 1px solid var(--line);
-    padding: 1px 6px;
-    border-radius: 4px;
-  }
+/* ── panels ── */
+.panel{display:none}.panel.active{display:block}
 
-  /* ---------- input ---------- */
-  .field {
-    display: block;
-    margin-bottom: 24px;
-  }
-  .label {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-family: var(--mono);
-    font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--fg-dim);
-    margin-bottom: 8px;
-  }
-  .label .hint {
-    text-transform: none;
-    letter-spacing: 0;
-    font-family: var(--sans);
-    font-size: 12px;
-  }
-  .input-wrap {
-    position: relative;
-  }
-  input.secret {
-    width: 100%;
-    font-family: var(--mono);
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    color: var(--fg);
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 14px 44px 14px 16px;
-    outline: none;
-    transition: border-color .15s, box-shadow .15s;
-  }
-  input.secret::placeholder {
-    color: var(--fg-dim);
-    font-weight: 400;
-  }
-  input.secret:focus {
-    border-color: oklch(0.62 0.13 145 / 0.6);
-    box-shadow: 0 0 0 4px oklch(0.62 0.13 145 / 0.10);
-  }
-  input.secret.invalid {
-    border-color: oklch(0.58 0.19 25 / 0.6);
-    box-shadow: 0 0 0 4px oklch(0.58 0.19 25 / 0.08);
-  }
-  .clear {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 26px; height: 26px;
-    border-radius: 6px;
-    border: 0;
-    background: transparent;
-    color: var(--fg-dim);
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    opacity: 0;
-    transition: opacity .15s, background .15s, color .15s;
-  }
-  .clear.show { opacity: 1; }
-  .clear:hover { background: var(--bg-sub); color: var(--fg); }
-  .clear svg { width: 14px; height: 14px; }
+/* ── panel header ── */
+.phead{margin-bottom:20px}
+.phead h1{font-size:19px;font-weight:600;letter-spacing:-0.02em;margin:0 0 4px}
+.phead p{font-size:13px;color:var(--fg-mid);margin:0;line-height:1.55}
 
-  .err {
-    font-family: var(--mono);
-    font-size: 11.5px;
-    color: var(--danger);
-    margin-top: 8px;
-    min-height: 14px;
-    opacity: 0;
-    transition: opacity .15s;
-  }
-  .err.show { opacity: 1; }
+/* ── shared field ── */
+.field{display:block;margin-bottom:16px}
+.flabel{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.09em;color:var(--fg-dim);margin-bottom:7px}
+.flabel .fhint{text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:11.5px;color:var(--fg-dim)}
 
-  /* ---------- code card ---------- */
-  .code-card {
-    position: relative;
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 28px 28px 0;
-    overflow: hidden;
-    transition: border-color .2s;
-  }
-  .code-card.empty {
-    background: var(--bg-sub);
-    border-style: dashed;
-  }
+.input-wrap{position:relative}
+input.fi,textarea.fi{
+  width:100%;font-family:var(--mono);font-size:13px;font-weight:500;color:var(--fg);
+  background:#fff;border:1px solid var(--line);border-radius:10px;
+  padding:11px 36px 11px 13px;outline:none;transition:border-color .15s,box-shadow .15s;
+  resize:none;line-height:1.5;
+}
+textarea.fi{padding-right:13px;min-height:90px}
+input.fi::placeholder,textarea.fi::placeholder{color:var(--fg-dim);font-weight:400}
+input.fi:focus,textarea.fi:focus{border-color:oklch(0.62 0.13 145/.55);box-shadow:0 0 0 4px oklch(0.62 0.13 145/.09)}
+input.fi.invalid,textarea.fi.invalid{border-color:oklch(0.58 0.19 25/.6);box-shadow:0 0 0 4px oklch(0.58 0.19 25/.08)}
 
-  .meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--mono);
-    font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
-    color: var(--fg-dim);
-    margin-bottom: 16px;
-  }
-  .meta .algo { color: var(--fg-mid); }
-  .meta .live {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .meta .live .pulse {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--accent);
-    animation: pulse 2s ease-in-out infinite;
-  }
-  .code-card.empty .meta .pulse {
-    background: var(--fg-dim);
-    animation: none;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 0.4; transform: scale(0.9); }
-    50%      { opacity: 1;   transform: scale(1.1); }
-  }
+.fi-clear{position:absolute;right:8px;top:8px;width:22px;height:22px;border-radius:5px;border:0;background:transparent;color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;opacity:0;transition:opacity .15s,background .15s}
+.fi-clear.show{opacity:1}
+.fi-clear:hover{background:var(--bg-sub);color:var(--fg)}
+.fi-clear svg{width:11px;height:11px}
 
-  /* the code itself */
-  .code {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    font-family: var(--mono);
-    font-weight: 500;
-    font-size: 64px;
-    letter-spacing: -0.01em;
-    color: var(--fg);
-    line-height: 1;
-    padding: 10px 0 28px;
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  .code .digit {
-    display: inline-block;
-    min-width: 0.62em;
-    text-align: center;
-    transition: color .2s;
-  }
-  .code .gap { width: 20px; }
-  .code-card.empty .code {
-    color: var(--line);
-    cursor: default;
-  }
-  .code.warn .digit { color: var(--warn); }
-  .code.copied .digit { color: var(--accent); }
+.ferr{font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:5px;min-height:14px;opacity:0;transition:opacity .15s}
+.ferr.show{opacity:1}
 
-  /* prev / next row */
-  .neighbors {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 12px;
-    padding: 4px 0 6px;
-  }
-  .neighbor {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-    padding: 6px 8px;
-    border-radius: 8px;
-    transition: background-color .15s;
-  }
-  .neighbor.right { align-items: flex-end; text-align: right; }
-  .neighbor:hover { background: var(--bg-sub); }
-  .neighbor .nk {
-    font-family: var(--mono);
-    font-size: 9.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--fg-dim);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .neighbor .nk svg { width: 9px; height: 9px; }
-  .neighbor .nv {
-    font-family: var(--mono);
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--fg-mid);
-    letter-spacing: 0.04em;
-    font-variant-numeric: tabular-nums;
-  }
-  .neighbor.copied .nv { color: var(--accent); }
-  .neighbors .divider {
-    width: 1px;
-    height: 28px;
-    background: var(--line-2);
-  }
-  .code-card.empty .neighbor { cursor: default; pointer-events: none; }
-  .code-card.empty .neighbor .nv { color: var(--line); }
+/* ── toggle row ── */
+.toggle-row{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.tog{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.07em;font-weight:500;color:var(--fg-dim);background:var(--bg-sub);border:1px solid var(--line);border-radius:7px;padding:5px 11px;cursor:pointer;transition:all .15s}
+.tog.active{background:var(--accent);color:#fff;border-color:transparent}
+.tog:hover:not(.active){color:var(--fg)}
 
-  /* footer inside card: tap to copy + countdown */
-  .card-foot {
-    margin: 0 -28px;
-    padding: 12px 28px;
-    border-top: 1px solid var(--line-2);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--fg-dim);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .copy-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: color .2s;
-  }
-  .copy-hint svg { width: 12px; height: 12px; }
-  .copy-hint.copied { color: var(--accent); }
-  .countdown-text {
-    font-variant-numeric: tabular-nums;
-    color: var(--fg-mid);
-  }
-  .countdown-text.warn { color: var(--warn); }
+/* ── swap row ── */
+.swap-row{display:flex;justify-content:flex-end;margin:-8px 0 10px}
+.swap-btn{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--fg-dim);background:var(--bg-sub);border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.swap-btn:hover{color:var(--fg);border-color:oklch(0.82 0.007 85)}
+.swap-btn svg{width:11px;height:11px}
 
-  /* the depleting bar */
-  .bar {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: 3px;
-    background: var(--line-2);
-  }
-  .bar .fill {
-    height: 100%;
-    width: 100%;
-    background: var(--accent);
-    transform-origin: left;
-    transition: background-color .3s;
-  }
-  .bar .fill.warn { background: var(--warn); }
-  .code-card.empty .bar { display: none; }
+/* ── output box ── */
+.out-box{position:relative;background:var(--bg-sub);border:1px solid var(--line);border-radius:10px;padding:12px 42px 12px 13px;min-height:46px}
+.out-val{font-family:var(--mono);font-size:12.5px;color:var(--fg);line-height:1.65;white-space:pre-wrap;word-break:break-all}
+.out-val.empty{color:var(--fg-dim);font-weight:400;white-space:normal}
+.out-meta{font-family:var(--mono);font-size:10px;color:var(--fg-dim);margin-top:6px;letter-spacing:0.04em}
+.copy-btn{position:absolute;right:8px;top:8px;width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s;flex-shrink:0}
+.copy-btn:hover{color:var(--fg);border-color:oklch(0.82 0.007 85)}
+.copy-btn.copied{color:var(--accent);border-color:var(--accent-dim);background:var(--accent-bg)}
+.copy-btn svg{width:12px;height:12px}
 
-  /* ---------- details strip ---------- */
-  .strip {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    margin-top: 20px;
-    background: var(--line-2);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .strip .cell {
-    background: var(--bg-sub);
-    padding: 12px 14px;
-  }
-  .strip .k {
-    font-family: var(--mono);
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--fg-dim);
-    margin-bottom: 4px;
-  }
-  .strip .v {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--fg);
-    font-variant-numeric: tabular-nums;
-  }
-  .strip .v.muted { color: var(--fg-dim); }
+/* ── strip ── */
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.strip .cell{background:var(--bg-sub);padding:10px 12px}
+.strip .sk{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--fg-dim);margin-bottom:3px}
+.strip .sv{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--fg);font-variant-numeric:tabular-nums;word-break:break-all;line-height:1.3}
+.strip .sv.muted{color:var(--fg-dim)}
+.strip-2{grid-template-columns:repeat(2,1fr)}
+.strip-4{grid-template-columns:repeat(4,1fr)}
 
-  /* ---------- footer ---------- */
-  footer {
-    margin-top: 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--mono);
-    font-size: 10.5px;
-    color: var(--fg-dim);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  footer .privacy {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-  footer .privacy .dot {
-    width: 5px; height: 5px; border-radius: 50%;
-    background: var(--accent);
-  }
-  footer a {
-    color: var(--fg-mid);
-    text-decoration: none;
-    border-bottom: 1px dotted var(--line);
-    padding-bottom: 1px;
-  }
+/* ── TOTP ── */
+.code-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 22px 0;overflow:hidden;transition:border-color .2s;margin-bottom:14px}
+.code-card.empty{background:var(--bg-sub);border-style:dashed}
+.cmeta{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.09em;color:var(--fg-dim);margin-bottom:10px}
+.cmeta .live{display:inline-flex;align-items:center;gap:6px}
+.cmeta .pulse{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 2s ease-in-out infinite}
+.code-card.empty .cmeta .pulse{background:var(--fg-dim);animation:none}
+@keyframes blink{0%,100%{opacity:.4;transform:scale(.9)}50%{opacity:1;transform:scale(1.1)}}
+.neighbors{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:2px 0 4px}
+.neighbor{display:flex;flex-direction:column;gap:3px;padding:5px 6px;border-radius:8px;cursor:pointer;user-select:none;-webkit-user-select:none;transition:background .15s}
+.neighbor.right{align-items:flex-end}
+.neighbor:hover{background:var(--bg-sub)}
+.neighbor .nk{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--fg-dim);display:inline-flex;align-items:center;gap:5px}
+.neighbor .nk svg{width:8px;height:8px}
+.neighbor .nv{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--fg-mid);letter-spacing:0.04em;font-variant-numeric:tabular-nums}
+.neighbor.copied .nv{color:var(--accent)}
+.ndivider{width:1px;height:24px;background:var(--line-2)}
+.code-card.empty .neighbor{cursor:default;pointer-events:none}
+.code-card.empty .neighbor .nv{color:var(--line)}
+.bigcode{display:flex;justify-content:center;gap:4px;font-family:var(--mono);font-weight:500;font-size:58px;letter-spacing:-.01em;color:var(--fg);line-height:1;padding:8px 0 20px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.bigcode .d{display:inline-block;min-width:.62em;text-align:center;transition:color .2s}
+.bigcode .g{width:16px}
+.code-card.empty .bigcode{color:var(--line);cursor:default}
+.bigcode.warn .d{color:var(--warn)}
+.bigcode.copied .d{color:var(--accent)}
+.cfoot{margin:0 -22px;padding:10px 22px;border-top:1px solid var(--line-2);display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10px;color:var(--fg-dim);letter-spacing:.04em;text-transform:uppercase}
+.copy-hint{display:inline-flex;align-items:center;gap:7px;transition:color .2s}
+.copy-hint svg{width:11px;height:11px}
+.copy-hint.copied{color:var(--accent)}
+.cdown{font-variant-numeric:tabular-nums;color:var(--fg-mid)}
+.cdown.warn{color:var(--warn)}
+.cbar{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--line-2)}
+.cfill{height:100%;width:100%;background:var(--accent);transform-origin:left;transition:background-color .3s}
+.cfill.warn{background:var(--warn)}
+.code-card.empty .cbar{display:none}
 
-  /* toast */
-  .toast {
-    position: fixed;
-    bottom: 32px;
-    left: 50%;
-    transform: translate(-50%, 16px);
-    background: var(--fg);
-    color: var(--bg);
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.04em;
-    padding: 10px 16px;
-    border-radius: 8px;
-    opacity: 0;
-    transition: opacity .2s, transform .2s;
-    pointer-events: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-  .toast svg { width: 13px; height: 13px; color: var(--accent-dim); }
+/* ── JWT ── */
+.jwt-parts{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.jwt-part{border-radius:10px;border:1px solid var(--line);overflow:hidden}
+.jwt-ph{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-sub);font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);border-bottom:1px solid var(--line);gap:8px}
+.jwt-ph .right{display:flex;align-items:center;gap:8px}
+.badge{font-size:9px;padding:2px 8px;border-radius:100px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-dim)}
+.badge.red{background:var(--danger-bg);color:var(--danger);border-color:oklch(0.88 0.07 25)}
+.badge.warn{background:var(--warn-bg);color:var(--warn);border-color:oklch(0.88 0.08 65)}
+.jwt-body{background:#fff;padding:11px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto}
+.jwt-body.empty{color:var(--fg-dim);font-style:italic;white-space:normal}
+.jwt-copy{width:22px;height:22px;border-radius:5px;border:1px solid var(--line);background:#fff;color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:all .15s}
+.jwt-copy:hover{color:var(--fg)}
+.jwt-copy.copied{color:var(--accent);border-color:var(--accent-dim);background:var(--accent-bg)}
+.jwt-copy svg{width:11px;height:11px}
+.exp-banner{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;font-family:var(--mono);font-size:11px;margin-bottom:10px;letter-spacing:.03em}
+.exp-banner.valid{background:var(--accent-bg);color:var(--add-fg);border:1px solid var(--accent-dim)}
+.exp-banner.expired{background:var(--danger-bg);color:var(--danger);border:1px solid oklch(0.88 0.07 25)}
+.exp-banner.no-exp{background:var(--bg-sub);color:var(--fg-dim);border:1px solid var(--line)}
+.exp-banner svg{width:13px;height:13px;flex-shrink:0}
+
+/* ── Hash ── */
+.hash-rows{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.hash-row{border-radius:10px;border:1px solid var(--line);overflow:hidden}
+.hash-rh{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:var(--bg-sub);font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);border-bottom:1px solid var(--line)}
+.hash-val{background:#fff;padding:10px 42px 10px 13px;font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--fg);word-break:break-all;line-height:1.5;position:relative;min-height:42px}
+.hash-val.empty{color:var(--fg-dim);font-weight:400}
+.hash-copy{position:absolute;right:8px;top:8px;width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s}
+.hash-copy:hover{color:var(--fg)}
+.hash-copy.copied{color:var(--accent);border-color:var(--accent-dim);background:var(--accent-bg)}
+.hash-copy svg{width:11px;height:11px}
+.file-drop-hint{display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--line);border-radius:10px;padding:14px;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.07em;cursor:pointer;transition:all .15s;margin-bottom:14px}
+.file-drop-hint:hover{border-color:var(--accent-dim);color:var(--accent);background:var(--accent-bg)}
+.file-drop-hint.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.file-drop-hint svg{width:14px;height:14px}
+
+/* ── JSON ── */
+.json-err-loc{font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:5px;opacity:0;transition:opacity .15s;min-height:14px}
+.json-err-loc.show{opacity:1}
+.json-out{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 42px 13px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto;position:relative;min-height:60px;max-height:360px;overflow-y:auto}
+.json-out.empty{color:var(--fg-dim);font-style:italic;white-space:normal}
+
+/* ── Hex ── */
+.hex-opts{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+
+/* ── HTML Entities ── */
+.entity-ref{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.entity-ref .ec{background:var(--bg-sub);padding:7px 9px;display:flex;justify-content:space-between;align-items:center;gap:6px;cursor:pointer;transition:background .12s}
+.entity-ref .ec:hover{background:oklch(0.96 0.005 85)}
+.entity-ref .ec .char{font-family:var(--mono);font-size:14px;color:var(--fg)}
+.entity-ref .ec .ent{font-family:var(--mono);font-size:10px;color:var(--fg-dim)}
+
+/* ── Regex ── */
+.rx-pattern-row{display:flex;gap:8px;margin-bottom:10px;align-items:stretch}
+.rx-delim{font-family:var(--mono);font-size:20px;color:var(--fg-dim);display:flex;align-items:center;padding:0 2px}
+.rx-pattern-wrap{flex:1;position:relative}
+.rx-flags-wrap{display:flex;gap:4px;align-items:center}
+.rx-flag{font-family:var(--mono);font-size:11px;font-weight:600;width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:var(--bg-sub);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s;text-transform:lowercase}
+.rx-flag.active{background:var(--accent);color:#fff;border-color:transparent}
+.rx-highlight-out{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px;font-family:var(--mono);font-size:13px;line-height:1.8;color:var(--fg);white-space:pre-wrap;word-break:break-all;min-height:80px;max-height:200px;overflow-y:auto}
+.rx-highlight-out mark{background:oklch(0.92 0.12 85);color:var(--fg);border-radius:2px;padding:0 1px}
+.rx-highlight-out mark.g1{background:oklch(0.9 0.1 220)}
+.rx-highlight-out mark.g2{background:oklch(0.9 0.1 310)}
+.rx-match-list{display:flex;flex-direction:column;gap:4px;margin-top:10px;max-height:160px;overflow-y:auto}
+.rx-match{background:var(--bg-sub);border:1px solid var(--line);border-radius:7px;padding:6px 10px;font-family:var(--mono);font-size:11.5px;display:flex;gap:10px;align-items:baseline}
+.rx-match .midx{color:var(--fg-dim);font-size:10px;min-width:48px}
+.rx-match .mval{color:var(--fg);word-break:break-all}
+.rx-match .mgrp{color:var(--fg-dim);font-size:10px}
+.rx-summary{font-family:var(--mono);font-size:10.5px;color:var(--fg-dim);margin-bottom:8px;letter-spacing:.04em}
+
+/* ── Diff ── */
+.diff-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media(max-width:500px){.diff-cols{grid-template-columns:1fr}}
+.diff-out{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px;max-height:400px;overflow-y:auto}
+.diff-summary{font-family:var(--mono);font-size:10.5px;padding:8px 12px;background:var(--bg-sub);border-bottom:1px solid var(--line);color:var(--fg-dim);display:flex;gap:16px}
+.diff-summary .dadd{color:var(--add-fg)}
+.diff-summary .ddel{color:var(--del-fg)}
+.diff-line{font-family:var(--mono);font-size:12px;padding:2px 12px;white-space:pre-wrap;word-break:break-all;line-height:1.6;display:flex;gap:10px}
+.diff-line .ln{min-width:18px;opacity:.45;user-select:none;font-size:10px;padding-top:2px}
+.diff-line.add{background:var(--add-bg);color:var(--add-fg)}
+.diff-line.del{background:var(--del-bg);color:var(--del-fg)}
+.diff-line.eq{color:var(--fg-mid)}
+.diff-empty{padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.08em}
+
+/* ── Color ── */
+.color-swatch{width:100%;height:72px;border-radius:12px;border:1px solid var(--line);margin-bottom:14px;transition:background .2s;background:var(--bg-sub);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.08em}
+.color-formats{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.color-fmt{background:#fff;border:1px solid var(--line);border-radius:10px;display:flex;align-items:center;gap:0;overflow:hidden}
+.color-fmt .cfk{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);padding:11px 12px;background:var(--bg-sub);border-right:1px solid var(--line);min-width:52px;text-align:center}
+.color-fmt .cfv{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--fg);padding:11px 40px 11px 13px;flex:1;word-break:break-all}
+.color-fmt .cfv.empty{color:var(--fg-dim);font-weight:400}
+.color-fmt .copy-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%)}
+.color-fmt{position:relative}
+
+/* ── UUID ── */
+.uuid-batch{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.uuid-item{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-family:var(--mono);font-size:12.5px;color:var(--fg)}
+.uuid-item .uuid-val{flex:1;word-break:break-all;letter-spacing:.02em}
+.uuid-item .copy-btn{position:static;flex-shrink:0;width:24px;height:24px}
+.uuid-validate{background:var(--bg-sub);border:1px solid var(--line);border-radius:10px;padding:10px 13px;font-family:var(--mono);font-size:11.5px;margin-top:6px;min-height:40px;line-height:1.55}
+.uuid-validate.empty{color:var(--fg-dim)}
+.uuid-validate .valid{color:var(--add-fg)}
+.uuid-validate .invalid{color:var(--danger)}
+
+/* ── Unix ── */
+.unix-clock{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.unix-clock .lv{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.unix-clock .lu{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim)}
+.unix-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:480px){.unix-cols{grid-template-columns:1fr}}
+.use-now{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-dim);background:transparent;border:1px solid var(--line);border-radius:6px;padding:3px 9px;cursor:pointer;transition:all .15s}
+.use-now:hover{color:var(--fg)}
+
+/* ── footer ── */
+footer{margin-top:32px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10px;color:var(--fg-dim);letter-spacing:.07em;text-transform:uppercase}
+footer .priv{display:inline-flex;align-items:center;gap:8px}
+footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+/* ── toast ── */
+.toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,14px);background:var(--fg);color:var(--bg);font-family:var(--mono);font-size:11px;letter-spacing:.04em;padding:8px 14px;border-radius:8px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;display:inline-flex;align-items:center;gap:8px;z-index:999}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast svg{width:11px;height:11px;color:var(--accent-dim)}
+
+/* ══ THEME SWITCHER ══ */
+.theme-btn{position:fixed;top:16px;right:20px;z-index:9000;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--bg-sub);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s;backdrop-filter:blur(8px)}
+.theme-btn:hover{color:var(--fg);border-color:oklch(0.80 0.008 85)}
+.theme-btn svg{width:14px;height:14px}
+.theme-panel{position:fixed;top:56px;right:20px;z-index:9000;width:224px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 32px oklch(0 0 0/.12),0 2px 8px oklch(0 0 0/.06);display:none;animation:tpIn .15s ease}
+.theme-panel.open{display:block}
+@keyframes tpIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.tp-lbl{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--fg-dim);margin-bottom:8px}
+.tp-modes{display:flex;gap:4px;margin-bottom:14px}
+.tp-mode{flex:1;font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:500;color:var(--fg-dim);background:var(--bg-sub);border:1px solid var(--line);border-radius:7px;padding:7px 0 5px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tp-mode svg{width:12px;height:12px}
+.tp-mode.active{background:var(--accent);color:#fff;border-color:transparent}
+.tp-mode:hover:not(.active){color:var(--fg)}
+.tp-divider{height:1px;background:var(--line-2);margin:0 0 12px}
+.tp-palette{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.tp-swatch{aspect-ratio:1;border-radius:8px;cursor:pointer;border:2.5px solid transparent;transition:transform .12s,border-color .15s;display:grid;place-items:center}
+.tp-swatch:hover{transform:scale(1.1)}
+.tp-swatch.active{border-color:var(--fg)}
+.tp-swatch svg{width:10px;height:10px;color:#fff;opacity:0;transition:opacity .15s;filter:drop-shadow(0 1px 2px oklch(0 0 0/.4))}
+.tp-swatch.active svg{opacity:1}
+
+/* ══ DARK MODE ══ */
+[data-mode="dark"]{--bg:oklch(0.13 0.008 85);--bg-sub:oklch(0.17 0.010 85);--line:oklch(0.26 0.010 85);--line-2:oklch(0.22 0.009 85);--fg:oklch(0.92 0.006 85);--fg-mid:oklch(0.65 0.008 85);--fg-dim:oklch(0.45 0.006 85);--warn-bg:oklch(0.22 0.06 65);--danger-bg:oklch(0.21 0.07 25);--add-bg:oklch(0.22 0.07 145);--add-fg:oklch(0.72 0.14 145);--del-bg:oklch(0.21 0.07 25);--del-fg:oklch(0.72 0.16 25)}
+/* component backgrounds */
+[data-mode="dark"] input.fi,[data-mode="dark"] textarea.fi{background:oklch(0.20 0.010 85);color:var(--fg);border-color:var(--line)}
+[data-mode="dark"] input.fi::placeholder,[data-mode="dark"] textarea.fi::placeholder{color:var(--fg-dim)}
+[data-mode="dark"] .code-card:not(.empty),[data-mode="dark"] .tab.active,[data-mode="dark"] .copy-btn,[data-mode="dark"] .jwt-copy,[data-mode="dark"] .hash-copy,[data-mode="dark"] .hash-val,[data-mode="dark"] .jwt-body:not(.empty),[data-mode="dark"] .json-out:not(.empty),[data-mode="dark"] .rx-highlight-out,[data-mode="dark"] .uuid-item,[data-mode="dark"] .color-fmt{background:oklch(0.20 0.010 85)}
+[data-mode="dark"] .tab.active{box-shadow:0 1px 3px oklch(0 0 0/.3),0 0 0 1px oklch(1 0 0/.06);color:var(--fg)}
+[data-mode="dark"] .color-fmt .cfv{color:var(--fg)}
+[data-mode="dark"] .swap-btn{background:oklch(0.20 0.010 85);border-color:var(--line);color:var(--fg-dim)}
+[data-mode="dark"] .rx-highlight-out mark{background:oklch(0.32 0.10 85)}
+[data-mode="dark"] .theme-panel{box-shadow:0 8px 32px oklch(0 0 0/.5),0 2px 8px oklch(0 0 0/.3)}
+[data-mode="dark"] .entity-ref .ec{background:oklch(0.20 0.010 85)}
+[data-mode="dark"] .entity-ref .ec:hover{background:oklch(0.24 0.010 85)}
+[data-mode="dark"] .diff-out{background:oklch(0.13 0.008 85)}
+[data-mode="dark"] .uuid-validate{background:oklch(0.17 0.010 85)}
+
+/* ══ NARROW SCREEN ══ */
+@media(max-width:400px){
+  body{padding:32px 14px 56px}
+  .entity-ref{grid-template-columns:repeat(2,1fr)}
+  .strip-4{grid-template-columns:repeat(2,1fr)}
+  .bigcode{font-size:46px}
+  .tp-palette{grid-template-columns:repeat(5,1fr)}
+}
+
+/* ══ REDUCED MOTION ══ */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+  .cmeta .pulse{animation:none;opacity:.7}
+}
 </style>
 </head>
 <body>
-  <main class="shell">
-    <div class="crumb">
-      <span class="dot"></span>
-      <span>TOTP</span>
-      <span class="sep">/</span>
-      <span class="path">decoder</span>
+<main class="shell">
+
+<div class="wordmark"><span class="dot"></span><span class="name">Decoder Tools</span></div>
+
+<div class="tabs-wrap"><nav class="tabs" role="tablist">
+  <button class="tab active" data-tab="totp">TOTP</button>
+  <button class="tab" data-tab="base64">Base64</button>
+  <button class="tab" data-tab="url">URL</button>
+  <button class="tab" data-tab="json">JSON</button>
+  <button class="tab" data-tab="jwt">JWT</button>
+  <button class="tab" data-tab="hash">Hash</button>
+  <button class="tab" data-tab="hex">Hex</button>
+  <button class="tab" data-tab="html">HTML</button>
+  <button class="tab" data-tab="regex">Regex</button>
+  <button class="tab" data-tab="diff">Diff</button>
+  <button class="tab" data-tab="color">Color</button>
+  <button class="tab" data-tab="uuid">UUID</button>
+  <button class="tab" data-tab="unix">Unix</button>
+</nav></div>
+
+<!-- ═══════════ TOTP ═══════════ -->
+<section class="panel active" id="panel-totp">
+  <div class="phead"><h1>TOTP Code Generator</h1><p>Paste a Base32 secret — live 6-digit HMAC-SHA1 code with countdown. Nothing stored.</p></div>
+  <label class="field">
+    <span class="flabel"><span>Base32 Secret</span><span class="fhint" id="totp-len">0 chars</span></span>
+    <span class="input-wrap">
+      <input id="totp-secret" class="fi" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="e.g.  JBSWY3DPEHPK3PXP" />
+      <button class="fi-clear" id="totp-clear"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </span>
+    <div class="ferr" id="totp-err">&nbsp;</div>
+  </label>
+  <section class="code-card empty" id="totp-card">
+    <div class="cmeta"><span>SHA‑1 · 6 digits · 30 s</span><span class="live"><span class="pulse"></span><span id="totp-status">waiting</span></span></div>
+    <div class="neighbors">
+      <div class="neighbor left" id="totp-prev" role="button"><span class="nk"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 3L4 6l3.5 3"/></svg>Previous</span><span class="nv" id="totp-prevcode">——————</span></div>
+      <div class="ndivider"></div>
+      <div class="neighbor right" id="totp-next" role="button"><span class="nk">Next<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 3L8 6l-3.5 3"/></svg></span><span class="nv" id="totp-nextcode">——————</span></div>
     </div>
+    <div class="bigcode" id="totp-code" role="button" aria-label="Copy code">
+      <span class="d">—</span><span class="d">—</span><span class="d">—</span><span class="g"></span><span class="d">—</span><span class="d">—</span><span class="d">—</span>
+    </div>
+    <div class="cfoot">
+      <span class="copy-hint" id="totp-copyhint"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg><span id="totp-copylabel">Click to copy</span></span>
+      <span class="cdown" id="totp-count">—</span>
+    </div>
+    <div class="cbar"><div class="cfill" id="totp-fill"></div></div>
+  </section>
+  <section class="strip">
+    <div class="cell"><div class="sk">Next code in</div><div class="sv muted" id="totp-nextin">—</div></div>
+    <div class="cell"><div class="sk">Counter</div><div class="sv muted" id="totp-counter">—</div></div>
+    <div class="cell"><div class="sk">Unix time</div><div class="sv muted" id="totp-unix">—</div></div>
+  </section>
+</section>
 
-    <h1 class="title">Generate a TOTP code</h1>
-    <p class="sub">Paste a Base32 secret to see the current 6-digit code. Computed locally in your browser — nothing is stored or transmitted.</p>
-
-    <label class="field">
-      <span class="label">
-        <span>Base32 Secret</span>
-        <span class="hint" id="lenHint">0 chars</span>
-      </span>
-      <span class="input-wrap">
-        <input
-          id="secret"
-          class="secret"
-          type="text"
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-          placeholder="e.g.  JBSWY3DPEHPK3PXP"
-        />
-        <button class="clear" id="clear" aria-label="Clear">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
-        </button>
-      </span>
-      <div class="err" id="err">&nbsp;</div>
-    </label>
-
-    <section class="code-card empty" id="card">
-      <div class="meta">
-        <span class="algo">SHA1 · 6 digits · 30s</span>
-        <span class="live"><span class="pulse"></span>waiting</span>
-      </div>
-
-      <div class="neighbors">
-        <div class="neighbor left" id="prev" role="button" aria-label="Copy previous code">
-          <span class="nk">
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 3L4 6l3.5 3"/></svg>
-            Previous
-          </span>
-          <span class="nv" id="prevCode">——————</span>
-        </div>
-        <div class="divider"></div>
-        <div class="neighbor right" id="next" role="button" aria-label="Copy next code">
-          <span class="nk">
-            Next
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 3L8 6l-3.5 3"/></svg>
-          </span>
-          <span class="nv" id="nextCode">——————</span>
-        </div>
-      </div>
-
-      <div class="code" id="code" role="button" aria-label="Copy code">
-        <span class="digit">—</span><span class="digit">—</span><span class="digit">—</span>
-        <span class="gap"></span>
-        <span class="digit">—</span><span class="digit">—</span><span class="digit">—</span>
-      </div>
-      <div class="card-foot">
-        <span class="copy-hint" id="copyHint">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="5" y="5" width="8" height="9" rx="1.5"/>
-            <path d="M3 11V3a1 1 0 011-1h7"/>
-          </svg>
-          <span id="copyLabel">Click to copy</span>
-        </span>
-        <span class="countdown-text" id="count">—</span>
-      </div>
-      <div class="bar"><div class="fill" id="fill"></div></div>
-    </section>
-
-    <section class="strip">
-      <div class="cell">
-        <div class="k">Next code in</div>
-        <div class="v muted" id="nextIn">—</div>
-      </div>
-      <div class="cell">
-        <div class="k">Counter</div>
-        <div class="v muted" id="counter">—</div>
-      </div>
-      <div class="cell">
-        <div class="k">Unix time</div>
-        <div class="v muted" id="unix">—</div>
-      </div>
-    </section>
-
-    <footer>
-      <span class="privacy"><span class="dot"></span>Runs locally · no data stored</span>
-      <span>RFC 6238</span>
-    </footer>
-  </main>
-
-  <div class="toast" id="toast">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 8.5l3.5 3.5L13 5"/>
-    </svg>
-    <span>Code copied</span>
+<!-- ═══════════ BASE64 ═══════════ -->
+<section class="panel" id="panel-base64">
+  <div class="phead"><h1>Base64</h1><p>Encode plain text to Base64 (RFC 4648) or decode back. Handles Unicode (UTF-8).</p></div>
+  <div class="toggle-row">
+    <button class="tog active" data-b64="encode">Encode</button>
+    <button class="tog" data-b64="decode">Decode</button>
   </div>
+  <label class="field">
+    <span class="flabel"><span id="b64-in-lbl">Plain text</span><span class="fhint" id="b64-in-cnt">0 chars</span></span>
+    <textarea id="b64-in" class="fi" rows="4" placeholder="Type or paste here…"></textarea>
+  </label>
+  <div class="swap-row"><button class="swap-btn" id="b64-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
+  <div class="flabel" style="margin-bottom:7px"><span id="b64-out-lbl">Base64 output</span><span class="fhint" id="b64-out-cnt"></span></div>
+  <div class="out-box"><div class="out-val empty" id="b64-out">Output will appear here</div><button class="copy-btn" id="b64-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+  <div class="ferr" id="b64-err">&nbsp;</div>
+</section>
+
+<!-- ═══════════ URL ═══════════ -->
+<section class="panel" id="panel-url">
+  <div class="phead"><h1>URL Encoder / Decoder</h1><p>Percent-encode or decode. Choose <b>Component</b> (encodes everything) or <b>Full URL</b> (preserves :/?#[] structure).</p></div>
+  <div class="toggle-row">
+    <button class="tog active" data-url="encode">Encode</button>
+    <button class="tog" data-url="decode">Decode</button>
+    <button class="tog active" data-urlm="component" style="margin-left:8px">Component</button>
+    <button class="tog" data-urlm="full">Full URL</button>
+  </div>
+  <label class="field">
+    <span class="flabel"><span id="url-in-lbl">Input</span><span class="fhint" id="url-in-cnt">0 chars</span></span>
+    <textarea id="url-in" class="fi" rows="3" placeholder="https://example.com/path?q=hello world&foo=bar"></textarea>
+  </label>
+  <div class="swap-row"><button class="swap-btn" id="url-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
+  <div class="flabel" style="margin-bottom:7px"><span id="url-out-lbl">Encoded output</span><span class="fhint" id="url-out-cnt"></span></div>
+  <div class="out-box"><div class="out-val empty" id="url-out">Output will appear here</div><button class="copy-btn" id="url-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+  <div class="ferr" id="url-err">&nbsp;</div>
+</section>
+
+<!-- ═══════════ JSON ═══════════ -->
+<section class="panel" id="panel-json">
+  <div class="phead"><h1>JSON Formatter</h1><p>Validate, pretty-print, or minify JSON. Errors show exact line and column.</p></div>
+  <div class="toggle-row">
+    <button class="tog active" data-json="format">Format</button>
+    <button class="tog" data-json="minify">Minify</button>
+    <button class="tog" data-json="validate">Validate only</button>
+    <button class="tog active" data-indent="2" style="margin-left:8px">2 spaces</button>
+    <button class="tog" data-indent="4">4 spaces</button>
+  </div>
+  <label class="field">
+    <span class="flabel"><span>JSON input</span><span class="fhint" id="json-in-cnt">0 chars</span></span>
+    <textarea id="json-in" class="fi" rows="5" placeholder='{"key": "value", "array": [1, 2, 3]}'></textarea>
+  </label>
+  <div class="json-err-loc" id="json-err">&nbsp;</div>
+  <div class="flabel" style="margin-bottom:7px"><span id="json-out-lbl">Output</span><span class="fhint" id="json-out-cnt"></span></div>
+  <div class="json-out empty" id="json-out">Output will appear here<button class="copy-btn" id="json-copy" style="position:absolute;right:8px;top:8px" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+</section>
+
+<!-- ═══════════ JWT ═══════════ -->
+<section class="panel" id="panel-jwt">
+  <div class="phead"><h1>JWT Decoder</h1><p>Inspect header, payload, and expiry. Signature is decoded but <em>not</em> verified.</p></div>
+  <label class="field">
+    <span class="flabel"><span>Token</span></span>
+    <textarea id="jwt-in" class="fi" rows="4" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"></textarea>
+    <div class="ferr" id="jwt-err">&nbsp;</div>
+  </label>
+  <div id="jwt-exp-banner" class="exp-banner no-exp" style="display:none"></div>
+  <div class="jwt-parts">
+    <div class="jwt-part">
+      <div class="jwt-ph"><span>Header</span><div class="right"><span class="badge" id="jwt-alg">—</span><button class="jwt-copy" id="jwt-hcopy" aria-label="Copy header"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div></div>
+      <div class="jwt-body empty" id="jwt-header">Paste a token above</div>
+    </div>
+    <div class="jwt-part">
+      <div class="jwt-ph"><span>Payload</span><div class="right"><span class="badge" id="jwt-exp-badge" style="display:none"></span><button class="jwt-copy" id="jwt-pcopy" aria-label="Copy payload"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div></div>
+      <div class="jwt-body empty" id="jwt-payload">—</div>
+    </div>
+    <div class="jwt-part">
+      <div class="jwt-ph"><span>Signature</span><div class="right"><span class="badge" style="background:var(--warn-bg);color:var(--warn);border-color:oklch(0.88 0.08 65);font-size:9px;padding:2px 8px;border-radius:100px;border:1px solid">Not verified</span></div></div>
+      <div class="jwt-body" id="jwt-sig" style="color:var(--fg-dim);font-size:11.5px;word-break:break-all">—</div>
+    </div>
+  </div>
+  <section class="strip strip-2" id="jwt-time-strip" style="display:none">
+    <div class="cell"><div class="sk">Issued at</div><div class="sv muted" id="jwt-iat">—</div></div>
+    <div class="cell"><div class="sk">Expires at</div><div class="sv muted" id="jwt-exp-at">—</div></div>
+  </section>
+</section>
+
+<!-- ═══════════ HASH ═══════════ -->
+<section class="panel" id="panel-hash">
+  <div class="phead"><h1>Hash Generator</h1><p>SHA-1, SHA-256, and SHA-512 digests. Type text or drop a file.</p></div>
+  <div class="file-drop-hint" id="hash-drop">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3"/><path d="M3 12h10a1 1 0 001-1V9"/><path d="M3 12a1 1 0 01-1-1V9"/></svg>
+    <span id="hash-drop-label">Drop a file here to hash it</span>
+  </div>
+  <label class="field">
+    <span class="flabel"><span>Text input</span><span class="fhint" id="hash-len">0 chars</span></span>
+    <textarea id="hash-in" class="fi" rows="3" placeholder="Type something to hash…"></textarea>
+  </label>
+  <div class="hash-rows">
+    <div class="hash-row"><div class="hash-rh"><span>SHA-1</span><span style="opacity:.45;font-size:9px">160 bit · 40 hex chars</span></div><div class="hash-val empty" id="hash-sha1">—<button class="hash-copy" id="hc-sha1"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div></div>
+    <div class="hash-row"><div class="hash-rh"><span>SHA-256</span><span style="opacity:.45;font-size:9px">256 bit · 64 hex chars</span></div><div class="hash-val empty" id="hash-sha256">—<button class="hash-copy" id="hc-sha256"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div></div>
+    <div class="hash-row"><div class="hash-rh"><span>SHA-512</span><span style="opacity:.45;font-size:9px">512 bit · 128 hex chars</span></div><div class="hash-val empty" id="hash-sha512">—<button class="hash-copy" id="hc-sha512"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div></div>
+  </div>
+</section>
+
+<!-- ═══════════ HEX ═══════════ -->
+<section class="panel" id="panel-hex">
+  <div class="phead"><h1>Hex Converter</h1><p>Convert text to hex bytes or decode hex back to text. Choose display format below.</p></div>
+  <div class="toggle-row">
+    <button class="tog active" data-hex="encode">Text → Hex</button>
+    <button class="tog" data-hex="decode">Hex → Text</button>
+  </div>
+  <div class="hex-opts toggle-row">
+    <button class="tog active" data-sep="space">Space</button>
+    <button class="tog" data-sep="none">No separator</button>
+    <button class="tog" data-sep="0x">0x prefix</button>
+    <button class="tog" data-sep="colon">Colon</button>
+  </div>
+  <label class="field">
+    <span class="flabel"><span id="hex-in-lbl">Text input</span><span class="fhint" id="hex-in-cnt">0 chars</span></span>
+    <textarea id="hex-in" class="fi" rows="3" placeholder="Hello, world!"></textarea>
+  </label>
+  <div class="swap-row"><button class="swap-btn" id="hex-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
+  <div class="flabel" style="margin-bottom:7px"><span id="hex-out-lbl">Hex output</span><span class="fhint" id="hex-out-cnt"></span></div>
+  <div class="out-box"><div class="out-val empty" id="hex-out">Output will appear here</div><button class="copy-btn" id="hex-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+  <div class="ferr" id="hex-err">&nbsp;</div>
+</section>
+
+<!-- ═══════════ HTML ENTITIES ═══════════ -->
+<section class="panel" id="panel-html">
+  <div class="phead"><h1>HTML Entities</h1><p>Encode special characters to HTML entities, or decode them back. Click a reference entry to insert it.</p></div>
+  <div class="toggle-row">
+    <button class="tog active" data-html="encode">Encode</button>
+    <button class="tog" data-html="decode">Decode</button>
+    <button class="tog active" data-htmlm="safe">Safe chars only</button>
+    <button class="tog" data-htmlm="all">All non-ASCII</button>
+  </div>
+  <label class="field">
+    <span class="flabel"><span id="html-in-lbl">Input</span><span class="fhint" id="html-in-cnt">0 chars</span></span>
+    <textarea id="html-in" class="fi" rows="3" placeholder="<p>Hello & &quot;world&quot;</p>"></textarea>
+  </label>
+  <div class="swap-row"><button class="swap-btn" id="html-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
+  <div class="flabel" style="margin-bottom:7px"><span id="html-out-lbl">Encoded output</span></div>
+  <div class="out-box" style="margin-bottom:14px"><div class="out-val empty" id="html-out">Output will appear here</div><button class="copy-btn" id="html-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+  <div class="flabel" style="margin-bottom:7px"><span>Common entities — click to copy</span></div>
+  <div class="entity-ref" id="entity-ref"></div>
+</section>
+
+<!-- ═══════════ REGEX ═══════════ -->
+<section class="panel" id="panel-regex">
+  <div class="phead"><h1>Regex Tester</h1><p>Test regular expressions live. Matches are highlighted; groups shown in the match list.</p></div>
+  <div class="field">
+    <span class="flabel"><span>Pattern</span></span>
+    <div class="rx-pattern-row">
+      <span class="rx-delim">/</span>
+      <div class="rx-pattern-wrap">
+        <input id="rx-pat" class="fi" type="text" placeholder="(\w+)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="padding-right:13px" />
+      </div>
+      <span class="rx-delim">/</span>
+      <div class="rx-flags-wrap">
+        <button class="rx-flag active" data-flag="g" title="Global">g</button>
+        <button class="rx-flag" data-flag="i" title="Case-insensitive">i</button>
+        <button class="rx-flag" data-flag="m" title="Multiline">m</button>
+        <button class="rx-flag" data-flag="s" title="Dot-all">s</button>
+      </div>
+    </div>
+    <div class="ferr" id="rx-err">&nbsp;</div>
+  </div>
+  <label class="field">
+    <span class="flabel"><span>Test string</span><span class="fhint" id="rx-summary"></span></span>
+    <textarea id="rx-test" class="fi" rows="4" placeholder="The quick brown fox jumps over the lazy dog"></textarea>
+  </label>
+  <div class="flabel" style="margin-bottom:7px"><span>Highlighted matches</span></div>
+  <div class="rx-highlight-out" id="rx-out">—</div>
+  <div class="rx-match-list" id="rx-matches"></div>
+</section>
+
+<!-- ═══════════ DIFF ═══════════ -->
+<section class="panel" id="panel-diff">
+  <div class="phead"><h1>Text Diff</h1><p>Line-by-line comparison of two texts. Green = added, red = removed.</p></div>
+  <div class="diff-cols">
+    <label class="field" style="margin-bottom:0">
+      <span class="flabel"><span>Original (A)</span></span>
+      <textarea id="diff-a" class="fi" rows="6" placeholder="Original text…"></textarea>
+    </label>
+    <label class="field" style="margin-bottom:0">
+      <span class="flabel"><span>Modified (B)</span></span>
+      <textarea id="diff-b" class="fi" rows="6" placeholder="Modified text…"></textarea>
+    </label>
+  </div>
+  <div class="diff-out" id="diff-out"><div class="diff-empty">Paste text in both fields above</div></div>
+</section>
+
+<!-- ═══════════ COLOR ═══════════ -->
+<section class="panel" id="panel-color">
+  <div class="phead"><h1>Color Converter</h1><p>Enter a color in any format — HEX, rgb(), or hsl(). See and copy all formats instantly.</p></div>
+  <label class="field">
+    <span class="flabel"><span>Color value</span></span>
+    <span class="input-wrap">
+      <input id="color-in" class="fi" type="text" placeholder="#1a2b3c  or  rgb(26, 43, 60)  or  hsl(210, 40%, 17%)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <button class="fi-clear" id="color-clear"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </span>
+    <div class="ferr" id="color-err">&nbsp;</div>
+  </label>
+  <div class="color-swatch" id="color-swatch">Enter a color above</div>
+  <div class="color-formats">
+    <div class="color-fmt"><span class="cfk">HEX</span><span class="cfv empty" id="cfmt-hex">—</span><button class="copy-btn" id="ccopy-hex" aria-label="Copy HEX"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+    <div class="color-fmt"><span class="cfk">RGB</span><span class="cfv empty" id="cfmt-rgb">—</span><button class="copy-btn" id="ccopy-rgb" aria-label="Copy RGB"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+    <div class="color-fmt"><span class="cfk">HSL</span><span class="cfv empty" id="cfmt-hsl">—</span><button class="copy-btn" id="ccopy-hsl" aria-label="Copy HSL"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+    <div class="color-fmt"><span class="cfk">oklch</span><span class="cfv empty" id="cfmt-oklch">—</span><button class="copy-btn" id="ccopy-oklch" aria-label="Copy oklch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+  </div>
+  <section class="strip strip-4" id="color-strip">
+    <div class="cell"><div class="sk">Red</div><div class="sv muted" id="cs-r">—</div></div>
+    <div class="cell"><div class="sk">Green</div><div class="sv muted" id="cs-g">—</div></div>
+    <div class="cell"><div class="sk">Blue</div><div class="sv muted" id="cs-b">—</div></div>
+    <div class="cell"><div class="sk">Hue</div><div class="sv muted" id="cs-h">—°</div></div>
+  </section>
+</section>
+
+<!-- ═══════════ UUID ═══════════ -->
+<section class="panel" id="panel-uuid">
+  <div class="phead"><h1>UUID Generator</h1><p>Generate RFC 4122 version 4 UUIDs using cryptographically random bytes.</p></div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+    <button class="tog active" id="uuid-gen" style="font-size:11px;padding:7px 14px">Generate 5 UUIDs</button>
+    <button class="tog" id="uuid-gen1" style="font-size:11px;padding:7px 14px">Generate 1</button>
+  </div>
+  <div class="uuid-batch" id="uuid-batch">
+    <div style="padding:18px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.08em">Click generate above</div>
+  </div>
+  <div class="field" style="margin-top:14px">
+    <span class="flabel"><span>Validate / inspect a UUID</span></span>
+    <span class="input-wrap">
+      <input id="uuid-val-in" class="fi" type="text" placeholder="550e8400-e29b-41d4-a716-446655440000" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+    </span>
+    <div class="uuid-validate empty" id="uuid-result">Paste a UUID to inspect it</div>
+  </div>
+</section>
+
+<!-- ═══════════ UNIX ═══════════ -->
+<section class="panel" id="panel-unix">
+  <div class="phead"><h1>Unix Timestamp</h1><p>Convert between Unix epoch seconds and human-readable dates. Local and UTC.</p></div>
+  <div class="unix-clock">
+    <div>
+      <div class="lu" style="margin-bottom:3px">Current timestamp</div>
+      <div class="lv" id="unix-live">—</div>
+    </div>
+    <button class="copy-btn" id="unix-now-copy" style="position:static;flex-shrink:0" aria-label="Copy timestamp"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button>
+  </div>
+  <div class="unix-cols">
+    <div>
+      <label class="field">
+        <span class="flabel" style="align-items:center"><span>Timestamp → Date</span><button class="use-now" id="use-now">Use now</button></span>
+        <input id="ts-in" class="fi" type="text" placeholder="e.g. 1714363200" autocomplete="off" />
+      </label>
+      <div class="out-box" style="margin-top:-8px"><div class="out-val empty" id="ts-out">—</div><button class="copy-btn" id="ts-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+    </div>
+    <div>
+      <label class="field">
+        <span class="flabel"><span>Date → Timestamp</span></span>
+        <input id="date-in" class="fi" type="datetime-local" />
+      </label>
+      <div class="out-box" style="margin-top:-8px"><div class="out-val empty" id="date-out">—</div><button class="copy-btn" id="date-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+    </div>
+  </div>
+  <section class="strip" id="unix-strip">
+    <div class="cell"><div class="sk">UTC</div><div class="sv muted" id="us-utc">—</div></div>
+    <div class="cell"><div class="sk">Local</div><div class="sv muted" id="us-local">—</div></div>
+    <div class="cell"><div class="sk">Relative</div><div class="sv muted" id="us-rel">—</div></div>
+  </section>
+</section>
+
+<footer>
+  <span class="priv"><span class="dot"></span>All computation local · no data stored</span>
+  <span id="footer-ref">RFC 6238</span>
+</footer>
+</main>
+
+<!-- ══ THEME TOGGLE ══ -->
+<button id="theme-btn" class="theme-btn" aria-label="Color theme"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg></button>
+<div id="theme-panel" class="theme-panel">
+  <div class="tp-lbl">Mode</div>
+  <div class="tp-modes">
+    <button class="tp-mode" data-mode="auto"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg>Auto</button>
+    <button class="tp-mode" data-mode="light"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.5 3.5l.7.7M11.8 11.8l.7.7M11.8 3.5l-.7.7M3.5 11.8l-.7.7"/></svg>Light</button>
+    <button class="tp-mode" data-mode="dark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 10A6 6 0 016 4a6 6 0 000 8 6 6 0 006-2z"/></svg>Dark</button>
+  </div>
+  <div class="tp-divider"></div>
+  <div class="tp-lbl">Palette</div>
+  <div class="tp-palette" id="tp-palette"></div>
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 5"/></svg>
+  <span id="toast-msg">Copied</span>
+</div>
 
 <script>
-/* ---------- Base32 → bytes (RFC 4648, A-Z 2-7) ---------- */
-const B32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-function base32Decode(input) {
-  const clean = input.replace(/=+$/,'').replace(/\s+/g,'').toUpperCase();
-  if (!clean) throw new Error('Empty secret');
-  if (!/^[A-Z2-7]+$/.test(clean)) throw new Error('Invalid Base32 characters');
-  let bits = '';
-  for (const ch of clean) {
-    const v = B32_ALPHABET.indexOf(ch);
-    bits += v.toString(2).padStart(5,'0');
-  }
-  const bytes = new Uint8Array(Math.floor(bits.length / 8));
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(bits.slice(i*8, i*8+8), 2);
-  }
-  return bytes;
-}
-
-/* ---------- HMAC-SHA1 via SubtleCrypto ---------- */
-async function hmacSha1(keyBytes, msgBytes) {
-  const key = await crypto.subtle.importKey(
-    'raw', keyBytes, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, msgBytes);
-  return new Uint8Array(sig);
-}
-
-/* ---------- TOTP (RFC 6238, 30s, 6 digits, SHA-1) ---------- */
-async function totp(secretBase32, epochSeconds) {
-  const key = base32Decode(secretBase32);
-  const counter = Math.floor(epochSeconds / 30);
-  const msg = new Uint8Array(8);
-  // 64-bit big-endian counter
-  const hi = Math.floor(counter / 2**32);
-  const lo = counter >>> 0;
-  new DataView(msg.buffer).setUint32(0, hi);
-  new DataView(msg.buffer).setUint32(4, lo);
-  const h = await hmacSha1(key, msg);
-  const off = h[h.length - 1] & 0x0f;
-  const bin = ((h[off] & 0x7f) << 24) |
-              ((h[off+1] & 0xff) << 16) |
-              ((h[off+2] & 0xff) << 8) |
-              (h[off+3] & 0xff);
-  return (bin % 1_000_000).toString().padStart(6, '0');
-}
-
-/* ---------- UI wiring ---------- */
+/* ═══════════════════════════════════════
+   SHARED
+═══════════════════════════════════════ */
 const $ = id => document.getElementById(id);
-const secretEl = $('secret');
-const clearBtn = $('clear');
-const errEl    = $('err');
-const lenHint  = $('lenHint');
-const card     = $('card');
-const codeEl   = $('code');
-const prevCodeEl = $('prevCode');
-const nextCodeEl = $('nextCode');
-const prevBtn  = $('prev');
-const nextBtn  = $('next');
-const fillEl   = $('fill');
-const countEl  = $('count');
-const copyHint = $('copyHint');
-const copyLbl  = $('copyLabel');
-const nextInEl = $('nextIn');
-const counterEl= $('counter');
-const unixEl   = $('unix');
-const toast    = $('toast');
-
-let currentCode = null;
-let prevCode = null;
-let nextCode = null;
-let lastSecret = '';
-let lastCounter = -1;
-
-function setDigits(str) {
-  const digits = codeEl.querySelectorAll('.digit');
-  for (let i = 0; i < 6; i++) {
-    digits[i].textContent = str[i] ?? '—';
-  }
+let _toastT;
+function showToast(msg){
+  $('toast-msg').textContent = msg;
+  $('toast').classList.add('show');
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => $('toast').classList.remove('show'), 1600);
 }
-
-function setEmpty(msg) {
-  card.classList.add('empty');
-  setDigits('------');
-  currentCode = null;
-  prevCode = null;
-  nextCode = null;
-  prevCodeEl.textContent = '——————';
-  nextCodeEl.textContent = '——————';
-  countEl.textContent = '—';
-  nextInEl.textContent = '—';
-  nextInEl.classList.add('muted');
-  counterEl.textContent = '—';
-  counterEl.classList.add('muted');
-  unixEl.textContent = '—';
-  unixEl.classList.add('muted');
-  fillEl.style.transform = 'scaleX(1)';
-  fillEl.style.transition = 'none';
-  fillEl.classList.remove('warn');
-  card.querySelector('.live').lastChild.textContent = msg || 'waiting';
+async function copyText(text, msg='Copied'){
+  try{ await navigator.clipboard.writeText(String(text)); showToast(msg); return true; }catch{ return false; }
 }
-
-function showError(msg) {
-  errEl.textContent = msg || '\u00A0';
-  errEl.classList.toggle('show', !!msg);
-  secretEl.classList.toggle('invalid', !!msg);
+function flashCopy(btn){
+  btn.classList.add('copied');
+  setTimeout(() => btn.classList.remove('copied'), 1500);
 }
+const COPY_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg>`;
 
-async function tick() {
-  const now = Date.now() / 1000;
-  const counter = Math.floor(now / 30);
-  const elapsed = now - counter * 30;
-  const remaining = 30 - elapsed;
+/* ═══════════════════════════════════════
+   TABS
+═══════════════════════════════════════ */
+const footerRef = {totp:'RFC 6238',base64:'RFC 4648',url:'RFC 3986',json:'ECMA-404',jwt:'RFC 7519',hash:'FIPS 180-4',hex:'—',html:'HTML5',regex:'ECMA-262',diff:'—',color:'CSS Color 4',uuid:'RFC 4122',unix:'POSIX.1'};
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    $('panel-' + btn.dataset.tab).classList.add('active');
+    $('footer-ref').textContent = footerRef[btn.dataset.tab] || '';
+    btn.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});
+  });
+});
+// tab bar fade indicators
+const _tabsEl = document.querySelector('.tabs');
+const _tabsWrap = document.querySelector('.tabs-wrap');
+function updateTabsFade(){
+  const max = _tabsEl.scrollWidth - _tabsEl.clientWidth;
+  if(max <= 1){ _tabsWrap.classList.remove('fade-l','fade-r'); return; }
+  _tabsWrap.classList.toggle('fade-l', _tabsEl.scrollLeft > 4);
+  _tabsWrap.classList.toggle('fade-r', _tabsEl.scrollLeft < max - 4);
+}
+_tabsEl.addEventListener('scroll', updateTabsFade, {passive:true});
+window.addEventListener('resize', updateTabsFade);
+updateTabsFade();
 
-  // Update countdown visuals always
-  unixEl.textContent = Math.floor(now).toString();
-  unixEl.classList.remove('muted');
-
-  const raw = secretEl.value.trim();
-  if (!raw) {
-    setEmpty('waiting');
-    showError('');
-    return;
+/* ═══════════════════════════════════════
+   TOTP
+═══════════════════════════════════════ */
+const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+function b32dec(s){
+  const c = s.replace(/=+$/,'').replace(/\s+/g,'').toUpperCase();
+  if(!c) throw new Error('Empty secret');
+  if(!/^[A-Z2-7]+$/.test(c)) throw new Error('Invalid Base32 characters');
+  let bits='';
+  for(const ch of c) bits += B32.indexOf(ch).toString(2).padStart(5,'0');
+  const b=new Uint8Array(Math.floor(bits.length/8));
+  for(let i=0;i<b.length;i++) b[i]=parseInt(bits.slice(i*8,i*8+8),2);
+  return b;
+}
+async function hmacSha1(key,msg){
+  const k=await crypto.subtle.importKey('raw',key,{name:'HMAC',hash:'SHA-1'},false,['sign']);
+  return new Uint8Array(await crypto.subtle.sign('HMAC',k,msg));
+}
+async function totp(secret,epoch){
+  const key=b32dec(secret), ctr=Math.floor(epoch/30);
+  const msg=new Uint8Array(8);
+  new DataView(msg.buffer).setUint32(0,Math.floor(ctr/2**32));
+  new DataView(msg.buffer).setUint32(4,ctr>>>0);
+  const h=await hmacSha1(key,msg);
+  const off=h[h.length-1]&0x0f;
+  const bin=((h[off]&0x7f)<<24)|((h[off+1]&0xff)<<16)|((h[off+2]&0xff)<<8)|(h[off+3]&0xff);
+  return (bin%1_000_000).toString().padStart(6,'0');
+}
+let tCur=null,tPrev=null,tNext=null,tLastSec='',tLastCtr=-1;
+function totpReset(msg){
+  $('totp-card').classList.add('empty');
+  $('totp-code').querySelectorAll('.d').forEach(d=>d.textContent='—');
+  tCur=tPrev=tNext=null;
+  $('totp-prevcode').textContent=$('totp-nextcode').textContent='——————';
+  $('totp-count').textContent=$('totp-nextin').textContent='—';
+  $('totp-nextin').classList.add('muted'); $('totp-counter').classList.add('muted');
+  $('totp-fill').style.transform='scaleX(1)'; $('totp-fill').classList.remove('warn');
+  $('totp-status').textContent=msg||'waiting';
+}
+function totpErr(msg){ $('totp-err').textContent=msg||'\u00a0'; $('totp-err').classList.toggle('show',!!msg); $('totp-secret').classList.toggle('invalid',!!msg); }
+function fmtC(s){ return s?s.slice(0,3)+' '+s.slice(3):'——————'; }
+async function totpTick(){
+  const now=Date.now()/1000, ctr=Math.floor(now/30), rem=30-(now-ctr*30);
+  $('totp-unix').textContent=Math.floor(now); $('totp-unix').classList.remove('muted');
+  const raw=$('totp-secret').value.trim();
+  if(!raw){ totpReset('waiting'); totpErr(''); return; }
+  const c=raw.replace(/\s+/g,'').replace(/=+$/,'').toUpperCase();
+  if(!/^[A-Z2-7]+$/.test(c)||c.length<8){ totpReset('invalid'); totpErr(c.length<8&&/^[A-Z2-7]*$/.test(c)?'Need at least 8 Base32 chars':'Non-Base32 characters (A–Z, 2–7 only)'); return; }
+  totpErr('');
+  if(c!==tLastSec||ctr!==tLastCtr){
+    try{
+      [tCur,tPrev,tNext]=await Promise.all([totp(c,now),totp(c,now-30),totp(c,now+30)]);
+      tLastSec=c; tLastCtr=ctr;
+      $('totp-code').querySelectorAll('.d').forEach((d,i)=>d.textContent=tCur[i]);
+      $('totp-prevcode').textContent=fmtC(tPrev); $('totp-nextcode').textContent=fmtC(tNext);
+      $('totp-card').classList.remove('empty'); $('totp-status').textContent='live';
+      $('totp-counter').textContent=ctr; $('totp-counter').classList.remove('muted');
+    }catch(e){ totpReset('invalid'); totpErr(e.message||'Decode failed'); return; }
   }
+  $('totp-fill').style.transition='none'; $('totp-fill').style.transform=`scaleX(${rem/30})`;
+  const secs=Math.ceil(rem); $('totp-count').textContent=`${secs}s`; $('totp-nextin').textContent=`${secs}s`; $('totp-nextin').classList.remove('muted');
+  const warn=rem<=5;
+  $('totp-fill').classList.toggle('warn',warn); $('totp-count').classList.toggle('warn',warn); $('totp-code').classList.toggle('warn',warn);
+}
+$('totp-secret').addEventListener('input',()=>{ const v=$('totp-secret').value; $('totp-len').textContent=`${v.replace(/\s+/g,'').length} chars`; $('totp-clear').classList.toggle('show',v.length>0); tLastCtr=-1; totpTick(); });
+$('totp-clear').addEventListener('click',()=>{ $('totp-secret').value=''; $('totp-len').textContent='0 chars'; $('totp-clear').classList.remove('show'); totpReset('waiting'); totpErr(''); $('totp-secret').focus(); });
+async function totpCopy(){ if(!tCur)return; await copyText(tCur,'Code copied'); const h=$('totp-copyhint'),l=$('totp-copylabel'),c=$('totp-code'); h.classList.add('copied'); c.classList.add('copied'); l.textContent='Copied'; clearTimeout(totpCopy._t); totpCopy._t=setTimeout(()=>{ h.classList.remove('copied'); c.classList.remove('copied'); l.textContent='Click to copy'; },1500); }
+async function totpCopyN(kind){ const code=kind==='prev'?tPrev:tNext,btn=$(kind==='prev'?'totp-prev':'totp-next'); if(!code)return; if(await copyText(code,kind==='prev'?'Previous code copied':'Next code copied')) flashCopy(btn); }
+$('totp-code').addEventListener('click',totpCopy);
+$('totp-prev').addEventListener('click',()=>totpCopyN('prev'));
+$('totp-next').addEventListener('click',()=>totpCopyN('next'));
+totpReset('waiting'); totpTick(); setInterval(totpTick,250);
 
-  // validate
-  const cleaned = raw.replace(/\s+/g,'').replace(/=+$/,'').toUpperCase();
-  if (!/^[A-Z2-7]+$/.test(cleaned) || cleaned.length < 8) {
-    setEmpty('invalid');
-    showError(cleaned.length < 8 && /^[A-Z2-7]*$/.test(cleaned)
-      ? 'Need at least 8 Base32 characters'
-      : 'Contains non-Base32 characters (A–Z, 2–7 only)');
-    return;
-  }
-  showError('');
+/* ═══════════════════════════════════════
+   BASE64
+═══════════════════════════════════════ */
+let b64mode='encode';
+function b64update(){
+  const v=$('b64-in').value;
+  $('b64-in-cnt').textContent=`${v.length} chars`;
+  const out=$('b64-out'),err=$('b64-err');
+  if(!v){ out.textContent='Output will appear here'; out.classList.add('empty'); $('b64-out-cnt').textContent=''; err.classList.remove('show'); return; }
+  try{
+    let r;
+    if(b64mode==='encode') r=btoa(unescape(encodeURIComponent(v)));
+    else r=decodeURIComponent(escape(atob(v.replace(/\s/g,''))));
+    out.textContent=r; out.classList.remove('empty'); $('b64-out-cnt').textContent=`${r.length} chars`; err.classList.remove('show');
+  }catch{ out.textContent='Output will appear here'; out.classList.add('empty'); $('b64-out-cnt').textContent=''; err.textContent=b64mode==='decode'?'Invalid Base64 string':'Encode failed'; err.classList.add('show'); }
+}
+document.querySelectorAll('[data-b64]').forEach(btn=>{
+  btn.addEventListener('click',()=>{ b64mode=btn.dataset.b64; document.querySelectorAll('[data-b64]').forEach(b=>b.classList.toggle('active',b.dataset.b64===b64mode)); $('b64-in-lbl').textContent=b64mode==='encode'?'Plain text':'Base64 input'; $('b64-out-lbl').textContent=b64mode==='encode'?'Base64 output':'Decoded text'; $('b64-in').placeholder=b64mode==='encode'?'Type or paste here…':'Paste Base64 string…'; b64update(); });
+});
+$('b64-in').addEventListener('input',b64update);
+$('b64-swap').addEventListener('click',()=>{
+  const out=$('b64-out');
+  if(out.classList.contains('empty'))return;
+  $('b64-in').value=out.textContent;
+  const newMode=b64mode==='encode'?'decode':'encode';
+  document.querySelector(`[data-b64="${newMode}"]`).click();
+});
+$('b64-copy').addEventListener('click',async()=>{ const v=$('b64-out').textContent; if($('b64-out').classList.contains('empty'))return; if(await copyText(v,'Copied')) flashCopy($('b64-copy')); });
 
-  // recompute code when secret or counter changes
-  if (cleaned !== lastSecret || counter !== lastCounter) {
-    try {
-      const [cur, prv, nxt] = await Promise.all([
-        totp(cleaned, now),
-        totp(cleaned, now - 30),
-        totp(cleaned, now + 30),
-      ]);
-      currentCode = cur;
-      prevCode = prv;
-      nextCode = nxt;
-      lastSecret = cleaned;
-      lastCounter = counter;
-      setDigits(currentCode);
-      prevCodeEl.textContent = formatCode(prevCode);
-      nextCodeEl.textContent = formatCode(nextCode);
-      card.classList.remove('empty');
-      card.querySelector('.live').lastChild.textContent = 'live';
-      counterEl.textContent = counter.toString();
-      counterEl.classList.remove('muted');
-    } catch (e) {
-      setEmpty('invalid');
-      showError(e.message || 'Could not decode secret');
-      return;
+/* ═══════════════════════════════════════
+   URL
+═══════════════════════════════════════ */
+let urlMode='encode', urlMeth='component';
+function urlUpdate(){
+  const v=$('url-in').value;
+  $('url-in-cnt').textContent=`${v.length} chars`;
+  const out=$('url-out'),err=$('url-err');
+  if(!v){ out.textContent='Output will appear here'; out.classList.add('empty'); $('url-out-cnt').textContent=''; err.classList.remove('show'); return; }
+  try{
+    let r;
+    if(urlMode==='encode') r=urlMeth==='component'?encodeURIComponent(v):encodeURI(v);
+    else r=urlMeth==='component'?decodeURIComponent(v):decodeURI(v);
+    out.textContent=r; out.classList.remove('empty'); $('url-out-cnt').textContent=`${r.length} chars`; err.classList.remove('show');
+  }catch{ out.textContent='Output will appear here'; out.classList.add('empty'); $('url-out-cnt').textContent=''; err.textContent='Invalid encoded string'; err.classList.add('show'); }
+}
+document.querySelectorAll('[data-url]').forEach(btn=>{ btn.addEventListener('click',()=>{ urlMode=btn.dataset.url; document.querySelectorAll('[data-url]').forEach(b=>b.classList.toggle('active',b.dataset.url===urlMode)); $('url-in-lbl').textContent=urlMode==='encode'?'Input':'Encoded input'; $('url-out-lbl').textContent=urlMode==='encode'?'Encoded output':'Decoded output'; urlUpdate(); }); });
+document.querySelectorAll('[data-urlm]').forEach(btn=>{ btn.addEventListener('click',()=>{ urlMeth=btn.dataset.urlm; document.querySelectorAll('[data-urlm]').forEach(b=>b.classList.toggle('active',b.dataset.urlm===urlMeth)); urlUpdate(); }); });
+$('url-in').addEventListener('input',urlUpdate);
+$('url-swap').addEventListener('click',()=>{ const out=$('url-out'); if(out.classList.contains('empty'))return; $('url-in').value=out.textContent; const nm=urlMode==='encode'?'decode':'encode'; document.querySelector(`[data-url="${nm}"]`).click(); });
+$('url-copy').addEventListener('click',async()=>{ const v=$('url-out').textContent; if($('url-out').classList.contains('empty'))return; if(await copyText(v,'Copied')) flashCopy($('url-copy')); });
+
+/* ═══════════════════════════════════════
+   JSON
+═══════════════════════════════════════ */
+let jsonMode='format', jsonIndent=2;
+function jsonUpdate(){
+  const v=$('json-in').value.trim();
+  $('json-in-cnt').textContent=`${$('json-in').value.length} chars`;
+  const out=$('json-out'),err=$('json-err');
+  if(!v){ out.childNodes[0].textContent='Output will appear here\n'; out.classList.add('empty'); $('json-out-cnt').textContent=''; err.classList.remove('show'); return; }
+  try{
+    const parsed=JSON.parse(v);
+    err.classList.remove('show');
+    if(jsonMode==='validate'){
+      out.childNodes[0].textContent='✓ Valid JSON\n'; out.classList.remove('empty');
+      $('json-out-cnt').textContent='Valid'; $('json-out-lbl').textContent='Result';
+    } else {
+      const r=jsonMode==='format'?JSON.stringify(parsed,null,jsonIndent):JSON.stringify(parsed);
+      out.childNodes[0].textContent=r+'\n'; out.classList.remove('empty');
+      $('json-out-cnt').textContent=`${r.length} chars`;
+      $('json-out-lbl').textContent=jsonMode==='format'?'Formatted output':'Minified output';
     }
+  }catch(e){
+    out.childNodes[0].textContent='Output will appear here\n'; out.classList.add('empty'); $('json-out-cnt').textContent='';
+    const m=e.message;
+    const posMatch=m.match(/position (\d+)/i);
+    if(posMatch){
+      const pos=parseInt(posMatch[1]);
+      const before=v.slice(0,pos);
+      const line=before.split('\n').length, col=before.length-before.lastIndexOf('\n');
+      err.textContent=`✕ ${m.replace(/in JSON.*/,'')} — line ${line}, col ${col}`;
+    } else { err.textContent=`✕ ${m}`; }
+    err.classList.add('show');
   }
-
-  // bar: transform from scaleX(1) at counter boundary → scaleX(0) at +30s
-  const frac = remaining / 30; // 1 → 0
-  fillEl.style.transition = 'none';
-  fillEl.style.transform = `scaleX(${frac})`;
-
-  // countdown text
-  const secs = Math.ceil(remaining);
-  countEl.textContent = `${secs}s`;
-  nextInEl.textContent = `${secs}s`;
-  nextInEl.classList.remove('muted');
-
-  // warning state in final 5 seconds
-  const warn = remaining <= 5;
-  fillEl.classList.toggle('warn', warn);
-  countEl.classList.toggle('warn', warn);
-  codeEl.classList.toggle('warn', warn);
 }
+document.querySelectorAll('[data-json]').forEach(btn=>{ btn.addEventListener('click',()=>{ jsonMode=btn.dataset.json; document.querySelectorAll('[data-json]').forEach(b=>b.classList.toggle('active',b.dataset.json===jsonMode)); jsonUpdate(); }); });
+document.querySelectorAll('[data-indent]').forEach(btn=>{ btn.addEventListener('click',()=>{ jsonIndent=parseInt(btn.dataset.indent); document.querySelectorAll('[data-indent]').forEach(b=>b.classList.toggle('active',b.dataset.indent===btn.dataset.indent)); jsonUpdate(); }); });
+$('json-in').addEventListener('input',jsonUpdate);
+$('json-copy').addEventListener('click',async()=>{ const v=$('json-out').childNodes[0].textContent.trim(); if($('json-out').classList.contains('empty'))return; if(await copyText(v,'Copied')) flashCopy($('json-copy')); });
 
-/* copy interaction */
-function formatCode(s) {
-  return s ? s.slice(0,3) + ' ' + s.slice(3) : '——————';
+/* ═══════════════════════════════════════
+   JWT
+═══════════════════════════════════════ */
+let jwtExpTs=null, jwtExpTimer=null;
+function b64url(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4)s+='='; return JSON.parse(decodeURIComponent(escape(atob(s)))); }
+function fmtTs(ts){ return new Date(ts*1000).toLocaleString(); }
+function jwtUpdateExpBanner(){
+  if(!jwtExpTs){ $('jwt-exp-banner').style.display='none'; return; }
+  const now=Date.now()/1000, diff=jwtExpTs-now;
+  const banner=$('jwt-exp-banner');
+  banner.style.display='flex';
+  if(diff>0){
+    const h=Math.floor(diff/3600),m=Math.floor((diff%3600)/60),s=Math.floor(diff%60);
+    const parts=h?[`${h}h`,`${m}m`]:[m?`${m}m`:null,`${s}s`].filter(Boolean);
+    banner.className='exp-banner valid';
+    banner.innerHTML=`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg> Valid · expires in ${parts.join(' ')}`;
+  } else {
+    const ago=Math.abs(Math.floor(diff));
+    const h=Math.floor(ago/3600),m=Math.floor((ago%3600)/60);
+    banner.className='exp-banner expired';
+    banner.innerHTML=`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M5 5l6 6M11 5l-6 6"/></svg> Expired ${h?h+'h '+m+'m':m+'m '+Math.floor(ago%60)+'s'} ago`;
+  }
 }
-
-async function copyCode() {
-  if (!currentCode) return;
-  try {
-    await navigator.clipboard.writeText(currentCode);
-    copyHint.classList.add('copied');
-    codeEl.classList.add('copied');
-    copyLbl.textContent = 'Copied';
-    toast.classList.add('show');
-    clearTimeout(copyCode._t);
-    copyCode._t = setTimeout(() => {
-      copyHint.classList.remove('copied');
-      codeEl.classList.remove('copied');
-      copyLbl.textContent = 'Click to copy';
-      toast.classList.remove('show');
-    }, 1400);
-  } catch {}
+function jwtResetUI(emptyMsg){
+  const hout=$('jwt-header'), pout=$('jwt-payload'), sout=$('jwt-sig');
+  hout.textContent=emptyMsg||'—'; hout.className='jwt-body empty';
+  pout.textContent='—'; pout.className='jwt-body empty';
+  sout.textContent='—';
+  $('jwt-alg').textContent='—';
+  $('jwt-exp-badge').style.display='none';
+  $('jwt-time-strip').style.display='none';
+  $('jwt-exp-banner').style.display='none';
+  $('jwt-iat').textContent='—'; $('jwt-iat').classList.add('muted');
+  $('jwt-exp-at').textContent='—'; $('jwt-exp-at').classList.add('muted');
 }
-
-codeEl.addEventListener('click', copyCode);
-
-async function copyNeighbor(kind) {
-  const code = kind === 'prev' ? prevCode : nextCode;
-  const btn  = kind === 'prev' ? prevBtn  : nextBtn;
-  if (!code) return;
-  try {
-    await navigator.clipboard.writeText(code);
-    btn.classList.add('copied');
-    toast.querySelector('span').textContent = `${kind === 'prev' ? 'Previous' : 'Next'} code copied`;
-    toast.classList.add('show');
-    clearTimeout(copyNeighbor._t);
-    copyNeighbor._t = setTimeout(() => {
-      btn.classList.remove('copied');
-      toast.classList.remove('show');
-      toast.querySelector('span').textContent = 'Code copied';
-    }, 1400);
-  } catch {}
+function jwtRun(){
+  const v=$('jwt-in').value.trim();
+  const err=$('jwt-err'), hout=$('jwt-header'), pout=$('jwt-payload'), sout=$('jwt-sig');
+  clearInterval(jwtExpTimer); jwtExpTs=null;
+  if(!v){ jwtResetUI('Paste a token above'); err.classList.remove('show'); return; }
+  const parts=v.split('.');
+  if(parts.length!==3){ jwtResetUI('—'); err.textContent='Not a valid JWT — expected 3 dot-separated parts'; err.classList.add('show'); return; }
+  err.classList.remove('show');
+  jwtResetUI('—');
+  try{
+    const header=b64url(parts[0]), payload=b64url(parts[1]);
+    hout.textContent=JSON.stringify(header,null,2); hout.className='jwt-body';
+    pout.textContent=JSON.stringify(payload,null,2); pout.className='jwt-body';
+    sout.textContent=parts[2]; sout.style.wordBreak='break-all';
+    $('jwt-alg').textContent=header.alg||'—';
+    if(payload.exp){
+      jwtExpTs=payload.exp;
+      const expired=payload.exp<Date.now()/1000;
+      $('jwt-exp-badge').textContent=expired?'Expired':'Valid';
+      $('jwt-exp-badge').className='badge'+(expired?' red':'');
+      $('jwt-exp-badge').style.display='';
+      $('jwt-exp-at').textContent=fmtTs(payload.exp); $('jwt-exp-at').classList.remove('muted');
+      jwtUpdateExpBanner();
+      jwtExpTimer=setInterval(jwtUpdateExpBanner,1000);
+    } else { $('jwt-exp-badge').style.display='none'; $('jwt-exp-banner').style.display='none'; }
+    if(payload.iat){ $('jwt-iat').textContent=fmtTs(payload.iat); $('jwt-iat').classList.remove('muted'); }
+    $('jwt-time-strip').style.display=(payload.exp||payload.iat)?'':'none';
+  }catch(e){ jwtResetUI('—'); err.textContent='Could not decode token — '+e.message; err.classList.add('show'); }
 }
-prevBtn.addEventListener('click', () => copyNeighbor('prev'));
-nextBtn.addEventListener('click', () => copyNeighbor('next'));
+$('jwt-in').addEventListener('input',jwtRun);
+$('jwt-hcopy').addEventListener('click',async()=>{ const v=$('jwt-header').textContent; if($('jwt-header').classList.contains('empty'))return; if(await copyText(v,'Header copied')) flashCopy($('jwt-hcopy')); });
+$('jwt-pcopy').addEventListener('click',async()=>{ const v=$('jwt-payload').textContent; if($('jwt-payload').classList.contains('empty'))return; if(await copyText(v,'Payload copied')) flashCopy($('jwt-pcopy')); });
 
-secretEl.addEventListener('input', () => {
-  const v = secretEl.value;
-  lenHint.textContent = `${v.replace(/\s+/g,'').length} chars`;
-  clearBtn.classList.toggle('show', v.length > 0);
-  tick();
+/* ═══════════════════════════════════════
+   HASH
+═══════════════════════════════════════ */
+async function hashBytes(bytes){
+  const enc=bytes instanceof Uint8Array?bytes:new TextEncoder().encode(bytes);
+  const algos=[['SHA-1','hash-sha1'],['SHA-256','hash-sha256'],['SHA-512','hash-sha512']];
+  await Promise.all(algos.map(async([algo,id])=>{
+    const buf=await crypto.subtle.digest(algo,enc);
+    const hex=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const el=$(id); el.childNodes[0].textContent=hex; el.classList.remove('empty');
+  }));
+}
+function hashClear(){ ['hash-sha1','hash-sha256','hash-sha512'].forEach(id=>{ const el=$(id); el.childNodes[0].textContent='—'; el.classList.add('empty'); }); }
+$('hash-in').addEventListener('input',async()=>{
+  const v=$('hash-in').value; $('hash-len').textContent=`${v.length} chars`;
+  if(!v){ hashClear(); return; }
+  await hashBytes(v);
+});
+['sha1','sha256','sha512'].forEach(a=>{ $(`hc-${a}`).addEventListener('click',async()=>{ const v=$(`hash-${a}`).childNodes[0].textContent; if(v==='—')return; if(await copyText(v,`SHA-${a.replace('sha','')} copied`)) flashCopy($(`hc-${a}`)); }); });
+// file drop
+const drop=$('hash-drop');
+drop.addEventListener('click',()=>{ const fi=document.createElement('input'); fi.type='file'; fi.onchange=async e=>{ const f=e.target.files[0]; if(!f)return; $('hash-drop-label').textContent=`Hashing ${f.name}…`; const ab=await f.arrayBuffer(); await hashBytes(new Uint8Array(ab)); $('hash-drop-label').textContent=`✓ ${f.name} (${(f.size/1024).toFixed(1)} KB)`; drop.classList.add('active'); }; fi.click(); });
+['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.add('active'); }));
+['dragleave','dragend'].forEach(ev=>drop.addEventListener(ev,()=>drop.classList.remove('active')));
+drop.addEventListener('drop',async e=>{ e.preventDefault(); drop.classList.remove('active'); const f=e.dataTransfer.files[0]; if(!f)return; $('hash-drop-label').textContent=`Hashing ${f.name}…`; const ab=await f.arrayBuffer(); await hashBytes(new Uint8Array(ab)); $('hash-drop-label').textContent=`✓ ${f.name} (${(f.size/1024).toFixed(1)} KB)`; drop.classList.add('active'); });
+
+/* ═══════════════════════════════════════
+   HEX
+═══════════════════════════════════════ */
+let hexMode='encode', hexSep='space';
+function hexUpdate(){
+  const v=$('hex-in').value;
+  $('hex-in-cnt').textContent=`${v.length} chars`;
+  const out=$('hex-out'),err=$('hex-err');
+  if(!v){ out.textContent='Output will appear here'; out.classList.add('empty'); $('hex-out-cnt').textContent=''; err.classList.remove('show'); return; }
+  try{
+    let r;
+    if(hexMode==='encode'){
+      const bytes=new TextEncoder().encode(v);
+      const parts=Array.from(bytes).map(b=>b.toString(16).padStart(2,'0'));
+      if(hexSep==='space') r=parts.join(' ');
+      else if(hexSep==='none') r=parts.join('');
+      else if(hexSep==='0x') r=parts.map(x=>'0x'+x).join(' ');
+      else r=parts.join(':');
+      $('hex-out-cnt').textContent=`${bytes.length} bytes`;
+    } else {
+      const clean=v.replace(/0x/gi,'').replace(/[\s:,]/g,'');
+      if(!/^[0-9a-fA-F]*$/.test(clean)) throw new Error('Invalid hex characters');
+      if(clean.length===0) throw new Error('No hex digits found');
+      if(clean.length%2!==0) throw new Error('Odd number of hex characters');
+      const bytes=new Uint8Array(clean.length/2);
+      for(let i=0;i<bytes.length;i++) bytes[i]=parseInt(clean.slice(i*2,i*2+2),16);
+      r=new TextDecoder().decode(bytes);
+      $('hex-out-cnt').textContent=`${bytes.length} bytes`;
+    }
+    out.textContent=r; out.classList.remove('empty'); err.classList.remove('show');
+  }catch(e){ out.textContent='Output will appear here'; out.classList.add('empty'); $('hex-out-cnt').textContent=''; err.textContent=e.message||'Invalid input'; err.classList.add('show'); }
+}
+document.querySelectorAll('[data-hex]').forEach(btn=>{ btn.addEventListener('click',()=>{ hexMode=btn.dataset.hex; document.querySelectorAll('[data-hex]').forEach(b=>b.classList.toggle('active',b.dataset.hex===hexMode)); $('hex-in-lbl').textContent=hexMode==='encode'?'Text input':'Hex input'; $('hex-out-lbl').textContent=hexMode==='encode'?'Hex output':'Text output'; $('hex-in').placeholder=hexMode==='encode'?'Hello, world!':'48 65 6c 6c 6f'; hexUpdate(); }); });
+document.querySelectorAll('[data-sep]').forEach(btn=>{ btn.addEventListener('click',()=>{ hexSep=btn.dataset.sep; document.querySelectorAll('[data-sep]').forEach(b=>b.classList.toggle('active',b.dataset.sep===hexSep)); hexUpdate(); }); });
+$('hex-in').addEventListener('input',hexUpdate);
+$('hex-swap').addEventListener('click',()=>{ const out=$('hex-out'); if(out.classList.contains('empty'))return; $('hex-in').value=out.textContent; const nm=hexMode==='encode'?'decode':'encode'; document.querySelector(`[data-hex="${nm}"]`).click(); });
+$('hex-copy').addEventListener('click',async()=>{ const v=$('hex-out').textContent; if($('hex-out').classList.contains('empty'))return; if(await copyText(v,'Copied')) flashCopy($('hex-copy')); });
+
+/* ═══════════════════════════════════════
+   HTML ENTITIES
+═══════════════════════════════════════ */
+let htmlMode='encode', htmlMeth='safe';
+const ENTITIES=[['&','&amp;'],['<','&lt;'],['>','&gt;'],['"','&quot;'],["'",'&#x27;'],['©','&copy;'],['®','&reg;'],['™','&trade;'],['€','&euro;'],['£','&pound;'],['¥','&yen;'],['…','&hellip;'],['—','&mdash;'],['–','&ndash;'],['←','&larr;'],['→','&rarr;']];
+function htmlEntEncode(s,all){
+  const safeMap={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;'};
+  if(!all) return s.replace(/[&<>"']/g,c=>safeMap[c]);
+  let out='';
+  for(const ch of s){
+    if(safeMap[ch]) out+=safeMap[ch];
+    else if(ch.codePointAt(0)>127) out+=`&#x${ch.codePointAt(0).toString(16)};`;
+    else out+=ch;
+  }
+  return out;
+}
+function htmlEntDecode(s){
+  const ta=document.createElement('textarea'); ta.innerHTML=s; return ta.value;
+}
+function htmlUpdate(){
+  const v=$('html-in').value;
+  $('html-in-cnt').textContent=`${v.length} chars`;
+  const out=$('html-out');
+  if(!v){ out.textContent='Output will appear here'; out.classList.add('empty'); return; }
+  const r=htmlMode==='encode'?htmlEntEncode(v,htmlMeth==='all'):htmlEntDecode(v);
+  out.textContent=r; out.classList.remove('empty');
+}
+document.querySelectorAll('[data-html]').forEach(btn=>{ btn.addEventListener('click',()=>{ htmlMode=btn.dataset.html; document.querySelectorAll('[data-html]').forEach(b=>b.classList.toggle('active',b.dataset.html===htmlMode)); $('html-in-lbl').textContent=htmlMode==='encode'?'Input':'Encoded input'; $('html-out-lbl').textContent=htmlMode==='encode'?'Encoded output':'Decoded output'; $('html-in').placeholder=htmlMode==='encode'?'<p>Hello & "world"</p>':'&lt;p&gt;Hello &amp; &quot;world&quot;&lt;/p&gt;'; htmlUpdate(); }); });
+document.querySelectorAll('[data-htmlm]').forEach(btn=>{ btn.addEventListener('click',()=>{ htmlMeth=btn.dataset.htmlm; document.querySelectorAll('[data-htmlm]').forEach(b=>b.classList.toggle('active',b.dataset.htmlm===htmlMeth)); htmlUpdate(); }); });
+$('html-in').addEventListener('input',htmlUpdate);
+$('html-swap').addEventListener('click',()=>{ const out=$('html-out'); if(out.classList.contains('empty'))return; $('html-in').value=out.textContent; const nm=htmlMode==='encode'?'decode':'encode'; document.querySelector(`[data-html="${nm}"]`).click(); });
+$('html-copy').addEventListener('click',async()=>{ const v=$('html-out').textContent; if($('html-out').classList.contains('empty'))return; if(await copyText(v,'Copied')) flashCopy($('html-copy')); });
+// entity reference grid
+const eref=$('entity-ref');
+ENTITIES.forEach(([char,entity])=>{
+  const ec=document.createElement('div'); ec.className='ec';
+  ec.innerHTML=`<span class="char">${entity==='&amp;'?'&amp;':char}</span><span class="ent">${entity}</span>`;
+  ec.addEventListener('click',async()=>{ await copyText(entity,`${entity} copied`); flashCopy(ec); });
+  eref.appendChild(ec);
 });
 
-clearBtn.addEventListener('click', () => {
-  secretEl.value = '';
-  clearBtn.classList.remove('show');
-  lenHint.textContent = '0 chars';
-  setEmpty('waiting');
-  showError('');
-  secretEl.focus();
-});
+/* ═══════════════════════════════════════
+   REGEX
+═══════════════════════════════════════ */
+let rxFlags=new Set(['g']);
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function rxRun(){
+  const pat=$('rx-pat').value, test=$('rx-test').value;
+  const err=$('rx-err'), out=$('rx-out'), ml=$('rx-matches'), sum=$('rx-summary');
+  ml.innerHTML=''; err.classList.remove('show'); $('rx-pat').classList.remove('invalid');
+  if(!pat||!test){ out.textContent=test||'—'; sum.textContent=''; return; }
+  let re;
+  try{ re=new RegExp(pat,[...rxFlags].join('')); }catch(e){ err.textContent=e.message; err.classList.add('show'); $('rx-pat').classList.add('invalid'); out.textContent=escHtml(test); return; }
+  const matches=[...test.matchAll(new RegExp(pat,[...new Set([...rxFlags,'g'])].join('')))];
+  sum.textContent=matches.length===0?'No matches':`${matches.length} match${matches.length>1?'es':''}`;
+  // build highlighted output
+  let html='', li=0;
+  matches.forEach(m=>{ html+=escHtml(test.slice(li,m.index)); html+=`<mark>${escHtml(m[0])}</mark>`; li=m.index+m[0].length; });
+  html+=escHtml(test.slice(li));
+  out.innerHTML=html||escHtml(test);
+  // match list
+  matches.slice(0,50).forEach((m,i)=>{
+    const div=document.createElement('div'); div.className='rx-match';
+    const groups=m.slice(1).filter(Boolean).map(g=>`"${g}"`).join(', ');
+    div.innerHTML=`<span class="midx">idx ${m.index}</span><span class="mval">${escHtml(m[0]||'(empty)')}</span>${groups?`<span class="mgrp">groups: ${escHtml(groups)}</span>`:''}`;
+    ml.appendChild(div);
+  });
+  if(matches.length>50){ const more=document.createElement('div'); more.className='rx-match'; more.style.color='var(--fg-dim)'; more.textContent=`…and ${matches.length-50} more`; ml.appendChild(more); }
+}
+document.querySelectorAll('.rx-flag').forEach(btn=>{ btn.addEventListener('click',()=>{ const f=btn.dataset.flag; if(rxFlags.has(f))rxFlags.delete(f);else rxFlags.add(f); btn.classList.toggle('active',rxFlags.has(f)); rxRun(); }); });
+$('rx-pat').addEventListener('input',rxRun);
+$('rx-test').addEventListener('input',rxRun);
 
-/* run */
-setEmpty('waiting');
-tick();
-setInterval(tick, 250);
+/* ═══════════════════════════════════════
+   DIFF
+═══════════════════════════════════════ */
+function lcs(a,b){
+  const m=a.length,n=b.length;
+  if(m>800||n>800) return null;
+  const dp=Array.from({length:m+1},()=>new Int32Array(n+1));
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++) dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+  const r=[]; let i=m,j=n;
+  while(i>0||j>0){
+    if(i>0&&j>0&&a[i-1]===b[j-1]){r.unshift({t:'=',v:a[i-1]});i--;j--;}
+    else if(j>0&&(i===0||dp[i][j-1]>=dp[i-1][j])){r.unshift({t:'+',v:b[j-1]});j--;}
+    else{r.unshift({t:'-',v:a[i-1]});i--;}
+  }
+  return r;
+}
+function diffRun(){
+  const a=$('diff-a').value, b=$('diff-b').value, out=$('diff-out');
+  if(!a&&!b){ out.innerHTML='<div class="diff-empty">Paste text in both fields above</div>'; return; }
+  const la=a.split('\n'), lb=b.split('\n');
+  const d=lcs(la,lb);
+  if(!d){ out.innerHTML='<div class="diff-empty">Inputs too large (max ~800 lines each)</div>'; return; }
+  let added=0,removed=0;
+  const lines=d.map((item,i)=>{
+    const cls=item.t==='+'?'add':item.t==='-'?'del':'eq';
+    if(item.t==='+') added++;
+    if(item.t==='-') removed++;
+    const pfx=item.t==='+'?'+':item.t==='-'?'−':' ';
+    return `<div class="diff-line ${cls}"><span class="ln">${pfx}</span><span>${escHtml(item.v)}</span></div>`;
+  }).join('');
+  const unchanged=d.length-added-removed;
+  out.innerHTML=`<div class="diff-summary"><span class="dadd">+${added} added</span><span class="ddel">−${removed} removed</span><span>${unchanged} unchanged</span></div>${lines}`;
+}
+$('diff-a').addEventListener('input',diffRun);
+$('diff-b').addEventListener('input',diffRun);
+
+/* ═══════════════════════════════════════
+   COLOR
+═══════════════════════════════════════ */
+function hexToRgb(h){
+  h=h.replace('#','');
+  if(h.length===3) h=h.split('').map(c=>c+c).join('');
+  if(h.length!==6) return null;
+  const n=parseInt(h,16); if(isNaN(n)) return null;
+  return{r:(n>>16)&255,g:(n>>8)&255,b:n&255};
+}
+function rgbToHex({r,g,b}){ return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase(); }
+function rgbToHsl({r,g,b}){
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b);
+  let h,s,l=(max+min)/2;
+  if(max===min){h=s=0;}else{
+    const d=max-min; s=l>0.5?d/(2-max-min):d/(max+min);
+    switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;case b:h=(r-g)/d+4;break;}
+    h/=6;
+  }
+  return{h:Math.round(h*360),s:Math.round(s*100),l:Math.round(l*100)};
+}
+function hslToRgb({h,s,l}){
+  h/=360;s/=100;l/=100;
+  if(s===0){const v=Math.round(l*255);return{r:v,g:v,b:v};}
+  const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;
+  const h2r=(p,q,t)=>{ if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<.5)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p; };
+  return{r:Math.round(h2r(p,q,h+1/3)*255),g:Math.round(h2r(p,q,h)*255),b:Math.round(h2r(p,q,h-1/3)*255)};
+}
+function rgbToOklch({r,g,b}){
+  // sRGB → linear
+  const lin=v=>{ v/=255; return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4); };
+  const [lr,lg,lb]=[lin(r),lin(g),lin(b)];
+  // linear sRGB → OKLab
+  const l=Math.cbrt(.4122214708*lr+.5363325363*lg+.0514459929*lb);
+  const m=Math.cbrt(.2119034982*lr+.6806995451*lg+.1073969566*lb);
+  const s=Math.cbrt(.0883024619*lr+.2817188376*lg+.6299787005*lb);
+  const L=.2104542553*l+.7936177850*m-.0040720468*s;
+  const a=1.9779984951*l-2.4285922050*m+.4505937099*s;
+  const bk=.0259040371*l+.7827717662*m-.8086757660*s;
+  const C=Math.sqrt(a*a+bk*bk);
+  const H=(Math.atan2(bk,a)*180/Math.PI+360)%360;
+  return{l:Math.round(L*1000)/1000,c:Math.round(C*1000)/1000,h:Math.round(H)};
+}
+function parseColor(inp){
+  inp=inp.trim();
+  // HEX
+  if(/^#?[0-9a-fA-F]{3}$/.test(inp)||/^#?[0-9a-fA-F]{6}$/.test(inp)){
+    const rgb=hexToRgb(inp.startsWith('#')?inp:'#'+inp); if(rgb) return rgb;
+  }
+  // rgb()
+  const rm=inp.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if(rm) return{r:+rm[1],g:+rm[2],b:+rm[3]};
+  // hsl()
+  const hm=inp.match(/^hsla?\(\s*(\d+)\s*,\s*(\d+)%?\s*,\s*(\d+)%?/);
+  if(hm) return hslToRgb({h:+hm[1],s:+hm[2],l:+hm[3]});
+  return null;
+}
+function colorClearOutputs(promptMsg){
+  const sw=$('color-swatch');
+  sw.textContent=promptMsg||''; sw.style.background='var(--bg-sub)';
+  ['hex','rgb','hsl','oklch'].forEach(k=>{ $(`cfmt-${k}`).textContent='—'; $(`cfmt-${k}`).classList.add('empty'); });
+  ['r','g','b','h'].forEach(k=>{ $(`cs-${k}`).textContent='—'; $(`cs-${k}`).classList.add('muted'); });
+}
+function colorUpdate(){
+  const v=$('color-in').value, err=$('color-err');
+  if(!v){ colorClearOutputs('Enter a color above'); err.classList.remove('show'); $('color-in').classList.remove('invalid'); return; }
+  const rgb=parseColor(v);
+  if(!rgb){ colorClearOutputs('Invalid color'); err.textContent='Not a recognized color format'; err.classList.add('show'); $('color-in').classList.add('invalid'); return; }
+  err.classList.remove('show'); $('color-in').classList.remove('invalid');
+  const sw=$('color-swatch');
+  const hsl=rgbToHsl(rgb), hex=rgbToHex(rgb), oklch=rgbToOklch(rgb);
+  sw.style.background=hex; sw.textContent='';
+  const fmts={hex:hex,rgb:`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`,hsl:`hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`,oklch:`oklch(${oklch.l} ${oklch.c} ${oklch.h})`};
+  Object.entries(fmts).forEach(([k,v])=>{ const el=$(`cfmt-${k}`); el.textContent=v; el.classList.remove('empty'); });
+  [['r',rgb.r],['g',rgb.g],['b',rgb.b],['h',hsl.h+'°']].forEach(([k,v])=>{ const el=$(`cs-${k}`); el.textContent=v; el.classList.remove('muted'); });
+}
+$('color-in').addEventListener('input',colorUpdate);
+$('color-clear').addEventListener('click',()=>{ $('color-in').value=''; $('color-clear').classList.remove('show'); colorUpdate(); });
+$('color-in').addEventListener('input',()=>$('color-clear').classList.toggle('show',$('color-in').value.length>0));
+['hex','rgb','hsl','oklch'].forEach(k=>{ $(`ccopy-${k}`).addEventListener('click',async()=>{ const v=$(`cfmt-${k}`).textContent; if(v==='—')return; if(await copyText(v,'Copied')) flashCopy($(`ccopy-${k}`)); }); });
+
+/* ═══════════════════════════════════════
+   UUID
+═══════════════════════════════════════ */
+function genUuid(){
+  const b=crypto.getRandomValues(new Uint8Array(16));
+  b[6]=(b[6]&0x0f)|0x40; b[8]=(b[8]&0x3f)|0x80;
+  const h=Array.from(b).map(x=>x.toString(16).padStart(2,'0'));
+  return `${h.slice(0,4).join('')}-${h.slice(4,6).join('')}-${h.slice(6,8).join('')}-${h.slice(8,10).join('')}-${h.slice(10).join('')}`;
+}
+function renderUuids(n){
+  const list=$('uuid-batch'); list.innerHTML='';
+  for(let i=0;i<n;i++){
+    const uuid=genUuid();
+    const div=document.createElement('div'); div.className='uuid-item';
+    div.innerHTML=`<span class="uuid-val">${uuid}</span><button class="copy-btn" aria-label="Copy">${COPY_SVG}</button>`;
+    div.querySelector('.copy-btn').addEventListener('click',async e=>{ if(await copyText(uuid,'UUID copied')) flashCopy(e.currentTarget); });
+    list.appendChild(div);
+  }
+}
+$('uuid-gen').addEventListener('click',()=>renderUuids(5));
+$('uuid-gen1').addEventListener('click',()=>renderUuids(1));
+function uuidInspect(u){
+  const res=$('uuid-result');
+  if(!u){ res.textContent='Paste a UUID to inspect it'; res.className='uuid-validate empty'; return; }
+  const uuidRe=/^[0-9a-f]{8}-[0-9a-f]{4}-([1-5])[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const m=u.trim().match(uuidRe);
+  if(!m){ res.innerHTML='<span class="invalid">✕ Not a valid UUID</span>'; res.className='uuid-validate'; return; }
+  const ver=m[1];
+  const variants=['v1 (time-based)','v2 (DCE security)','v3 (MD5 name-based)','v4 (random)','v5 (SHA-1 name-based)'];
+  res.innerHTML=`<span class="valid">✓ Valid UUID · ${variants[ver-1]||'version '+ver}</span>`;
+  res.className='uuid-validate';
+}
+$('uuid-val-in').addEventListener('input',()=>uuidInspect($('uuid-val-in').value));
+
+/* ═══════════════════════════════════════
+   UNIX TIME
+═══════════════════════════════════════ */
+let unixActiveTsForStrip=null;
+function relTime(diff){
+  const abs=Math.abs(diff),fut=diff>0;
+  let s;
+  if(abs<60)s=`${Math.round(abs)}s`;
+  else if(abs<3600)s=`${Math.round(abs/60)}m`;
+  else if(abs<86400)s=`${Math.round(abs/3600)}h`;
+  else s=`${Math.round(abs/86400)}d`;
+  return fut?`in ${s}`:`${s} ago`;
+}
+function updateStrip(ts){
+  if(ts===null||ts===undefined||isNaN(ts)){ unixActiveTsForStrip=null; ['us-utc','us-local','us-rel'].forEach(id=>{$(id).textContent='—';$(id).classList.add('muted');}); return; }
+  unixActiveTsForStrip=ts;
+  const d=new Date(ts*1000);
+  $('us-utc').textContent=d.toUTCString(); $('us-utc').classList.remove('muted');
+  $('us-local').textContent=d.toLocaleString(); $('us-local').classList.remove('muted');
+  $('us-rel').textContent=relTime(ts-Date.now()/1000); $('us-rel').classList.remove('muted');
+}
+$('ts-in').addEventListener('input',()=>{
+  const v=$('ts-in').value.trim(), out=$('ts-out');
+  if(!v){out.textContent='—';out.classList.add('empty');updateStrip(null);return;}
+  const n=Number(v); if(isNaN(n)){out.textContent='Invalid timestamp';out.classList.add('empty');return;}
+  const d=new Date(n*1000);
+  out.textContent=d.toISOString().replace('T',' ').replace('Z',' UTC'); out.classList.remove('empty');
+  updateStrip(n);
+});
+$('date-in').addEventListener('input',()=>{
+  const v=$('date-in').value, out=$('date-out');
+  if(!v){out.textContent='—';out.classList.add('empty');updateStrip(null);return;}
+  const ts=Math.floor(new Date(v).getTime()/1000);
+  if(isNaN(ts)){out.textContent='Invalid date';out.classList.add('empty');return;}
+  out.textContent=ts; out.classList.remove('empty'); updateStrip(ts);
+});
+$('ts-copy').addEventListener('click',async()=>{ const v=$('ts-out').textContent; if(v==='—')return; if(await copyText(v,'Copied')) flashCopy($('ts-copy')); });
+$('date-copy').addEventListener('click',async()=>{ const v=$('date-out').textContent; if(v==='—')return; if(await copyText(v,'Copied')) flashCopy($('date-copy')); });
+$('use-now').addEventListener('click',()=>{ const now=Math.floor(Date.now()/1000); $('ts-in').value=now; $('ts-in').dispatchEvent(new Event('input')); });
+$('unix-now-copy').addEventListener('click',async()=>{ const v=$('unix-live').textContent; if(await copyText(v,'Timestamp copied')) flashCopy($('unix-now-copy')); });
+// live clock + relative time refresh
+setInterval(()=>{
+  $('unix-live').textContent=Math.floor(Date.now()/1000);
+  if(unixActiveTsForStrip!==null){
+    $('us-rel').textContent=relTime(unixActiveTsForStrip-Date.now()/1000);
+  }
+},1000);
+$('unix-live').textContent=Math.floor(Date.now()/1000);
+
+/* ═══════════════════════════════════════
+   THEME SYSTEM
+═══════════════════════════════════════ */
+const PALETTES=[
+  {id:'sage',    h:145,c:0.13},
+  {id:'ocean',   h:220,c:0.15},
+  {id:'sunset',  h:30, c:0.18},
+  {id:'rose',    h:355,c:0.18},
+  {id:'violet',  h:290,c:0.20},
+  {id:'amber',   h:75, c:0.20},
+  {id:'slate',   h:250,c:0.06},
+  {id:'crimson', h:15, c:0.22},
+  {id:'teal',    h:185,c:0.14},
+  {id:'indigo',  h:260,c:0.20},
+];
+let tMode=localStorage.getItem('dt-mode')||'auto';
+let tPal=localStorage.getItem('dt-pal')||'sage';
+function isDarkNow(){return tMode==='dark'||(tMode==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches);}
+function applyTheme(){
+  const dark=isDarkNow(),p=PALETTES.find(x=>x.id===tPal)||PALETTES[0],{h,c}=p,root=document.documentElement;
+  root.setAttribute('data-mode',dark?'dark':'light');
+  const accentL=dark?0.72:0.62;
+  root.style.setProperty('--accent',`oklch(${accentL} ${c} ${h})`);
+  root.style.setProperty('--accent-dim',dark?`oklch(0.42 ${c*.8} ${h})`:`oklch(0.88 ${c*.35} ${h})`);
+  root.style.setProperty('--accent-bg',dark?`oklch(0.24 ${c*.55} ${h})`:`oklch(0.96 ${c*.28} ${h})`);
+  document.body.style.background=dark
+    ?`radial-gradient(ellipse 80% 50% at 50% -5%,oklch(0.22 0.05 ${h}/.35),transparent 60%),oklch(0.13 0.008 85)`
+    :`radial-gradient(ellipse 80% 50% at 50% -5%,oklch(0.96 0.02 ${h}/.55),transparent 60%),oklch(0.985 0.003 85)`;
+  const ICONS={
+    auto:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg>`,
+    light:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.5 3.5l.7.7M11.8 11.8l.7.7M11.8 3.5l-.7.7M3.5 11.8l-.7.7"/></svg>`,
+    dark:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 10A6 6 0 016 4a6 6 0 000 8 6 6 0 006-2z"/></svg>`,
+  };
+  $('theme-btn').innerHTML=ICONS[tMode];
+  document.querySelectorAll('.tp-mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===tMode));
+}
+function buildPalette(){
+  const grid=$('tp-palette');grid.innerHTML='';
+  PALETTES.forEach(p=>{
+    const sw=document.createElement('div');sw.className='tp-swatch'+(p.id===tPal?' active':'');
+    sw.style.background=`oklch(0.62 ${p.c} ${p.h})`;sw.title=p.id[0].toUpperCase()+p.id.slice(1);
+    sw.innerHTML=`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 5"/></svg>`;
+    sw.addEventListener('click',()=>{tPal=p.id;localStorage.setItem('dt-pal',tPal);buildPalette();applyTheme();});
+    grid.appendChild(sw);
+  });
+}
+document.querySelectorAll('.tp-mode').forEach(btn=>btn.addEventListener('click',()=>{tMode=btn.dataset.mode;localStorage.setItem('dt-mode',tMode);applyTheme();}));
+$('theme-btn').addEventListener('click',e=>{e.stopPropagation();$('theme-panel').classList.toggle('open');});
+document.addEventListener('click',e=>{if(!$('theme-panel').contains(e.target)&&e.target!==$('theme-btn'))$('theme-panel').classList.remove('open');});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(tMode==='auto')applyTheme();});
+buildPalette();applyTheme();
 </script>
 </body>
 </html>
