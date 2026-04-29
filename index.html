@@ -73,8 +73,8 @@ body{
 .wordmark .name{font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--fg-mid)}
 
 /* ── tab bar ── */
-.tabs-wrap{position:relative;margin:0 0 24px 50%;width:max-content;max-width:calc(100vw - (var(--page-pad) * 2));transform:translateX(-50%)}
-.tabs{display:flex;gap:2px;width:max-content;max-width:100%;background:var(--bg-sub);border:1px solid var(--line);border-radius:12px;padding:4px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none}
+.tabs-wrap{position:relative;margin:0 0 24px 50%;width:max-content;max-width:calc(100vw - (var(--page-pad) * 2));min-width:0;transform:translateX(-50%)}
+.tabs{display:flex;gap:2px;width:max-content;max-width:100%;min-width:0;background:var(--bg-sub);border:1px solid var(--line);border-radius:12px;padding:4px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tabs-wrap::before,.tabs-wrap::after{content:"";position:absolute;top:1px;bottom:1px;width:24px;pointer-events:none;border-radius:12px;opacity:0;transition:opacity .15s;z-index:1}
 .tabs-wrap::before{left:1px;background:linear-gradient(to right,var(--bg-sub),transparent)}
@@ -135,9 +135,25 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .out-val{font-family:var(--mono);font-size:12.5px;color:var(--fg);line-height:1.65;white-space:pre-wrap;word-break:break-all}
 .out-val.empty{color:var(--fg-dim);font-weight:400;white-space:normal}
 .out-meta{font-family:var(--mono);font-size:10px;color:var(--fg-dim);margin-top:6px;letter-spacing:0.04em}
-.copy-btn{position:absolute;right:8px;top:8px;width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s;flex-shrink:0}
-.copy-btn:hover{color:var(--fg);border-color:var(--line-hover)}
-.copy-btn.copied{color:var(--accent);border-color:var(--accent-dim);background:var(--accent-bg)}
+
+/* ── 1Password-style click-to-copy: container itself is the button ── */
+.copyable{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s,background-color .15s,color .15s,box-shadow .15s,transform .08s}
+.copyable:hover{border-color:var(--line-hover)}
+.copyable:hover .copy-btn{color:var(--fg);border-color:var(--line-hover);background:var(--hover)}
+.copyable:active{transform:scale(.997)}
+/* empty state — derive from self or any descendant marked .empty */
+.copyable.empty,.copyable:has(.empty){cursor:default}
+.copyable.empty,.copyable.empty:hover,
+.copyable:has(.empty),.copyable:has(.empty):hover{border-color:var(--line)}
+.copyable.empty:hover .copy-btn,
+.copyable:has(.empty):hover .copy-btn{color:var(--fg-dim);border-color:var(--line);background:var(--surface)}
+.copyable.empty:active,.copyable:has(.empty):active{transform:none}
+.copyable.empty .copy-btn,.copyable:has(.empty) .copy-btn{opacity:.45}
+/* copied flash */
+.copyable.copied,.copyable.copied:hover{border-color:var(--accent-dim);background:var(--accent-bg)}
+.copyable.copied .copy-btn,.copyable.copied:hover .copy-btn{color:var(--accent);border-color:var(--accent-dim);background:var(--accent-bg);opacity:1}
+/* copy icon: visual cue only, click events go to .copyable container */
+.copy-btn{position:absolute;right:8px;top:8px;width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--fg-dim);display:grid;place-items:center;flex-shrink:0;pointer-events:none;transition:color .15s,border-color .15s,background-color .15s;font:inherit;padding:0}
 .copy-btn svg{width:12px;height:12px}
 
 /* ── strip ── */
@@ -193,12 +209,8 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .badge{font-size:9px;padding:2px 8px;border-radius:100px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-dim)}
 .badge.red{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-line)}
 .badge.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
-.jwt-body{background:var(--surface);padding:11px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto}
+.jwt-body{position:relative;background:var(--surface);padding:11px 42px 11px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto}
 .jwt-body.empty{color:var(--fg-dim);font-style:italic;white-space:normal}
-.jwt-copy{width:22px;height:22px;border-radius:5px;border:1px solid var(--line);background:var(--surface);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:all .15s}
-.jwt-copy:hover{color:var(--fg)}
-.jwt-copy.copied{color:var(--accent);border-color:var(--accent-dim);background:var(--accent-bg)}
-.jwt-copy svg{width:11px;height:11px}
 .exp-banner{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;font-family:var(--mono);font-size:11px;margin-bottom:10px;letter-spacing:.03em}
 .exp-banner.valid{background:var(--accent-bg);color:var(--add-fg);border:1px solid var(--accent-dim)}
 .exp-banner.expired{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-line)}
@@ -211,10 +223,6 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .hash-rh{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:var(--bg-sub);font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);border-bottom:1px solid var(--line)}
 .hash-val{background:var(--surface);padding:10px 42px 10px 13px;font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--fg);word-break:break-all;line-height:1.5;position:relative;min-height:42px}
 .hash-val.empty{color:var(--fg-dim);font-weight:400}
-.hash-copy{position:absolute;right:8px;top:8px;width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s}
-.hash-copy:hover{color:var(--fg)}
-.hash-copy.copied{color:var(--accent);border-color:var(--accent-dim);background:var(--accent-bg)}
-.hash-copy svg{width:11px;height:11px}
 .file-drop-hint{display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--line);border-radius:10px;padding:14px;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.07em;cursor:pointer;transition:all .15s;margin-bottom:14px}
 .file-drop-hint:hover{border-color:var(--accent-dim);color:var(--accent);background:var(--accent-bg)}
 .file-drop-hint.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
@@ -289,7 +297,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .uuid-validate .invalid{color:var(--danger)}
 
 /* ── Unix ── */
-.unix-clock{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.unix-clock{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;padding:12px 50px 12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg-sub)}
 .unix-clock .lv{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .unix-clock .lu{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim)}
 .unix-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
@@ -301,6 +309,9 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 footer{margin-top:32px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10px;color:var(--fg-dim);letter-spacing:.07em;text-transform:uppercase}
 footer .priv{display:inline-flex;align-items:center;gap:8px}
 footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.legal{margin-top:14px;padding-top:14px;border-top:1px solid var(--line-2);text-align:center;font-family:var(--mono);font-size:9px;color:var(--fg-dim);letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+.legal a{color:inherit;text-decoration:none}
+.legal a:hover{color:var(--fg)}
 
 /* ── toast ── */
 .toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,14px);background:var(--fg);color:var(--bg);font-family:var(--mono);font-size:11px;letter-spacing:.04em;padding:8px 14px;border-radius:8px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;display:inline-flex;align-items:center;gap:8px;z-index:999}
@@ -333,7 +344,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 /* component backgrounds */
 [data-mode="dark"] input.fi,[data-mode="dark"] textarea.fi{background:var(--surface);color:var(--fg);border-color:var(--line)}
 [data-mode="dark"] input.fi::placeholder,[data-mode="dark"] textarea.fi::placeholder{color:var(--fg-dim)}
-[data-mode="dark"] .code-card:not(.empty),[data-mode="dark"] .tab.active,[data-mode="dark"] .copy-btn,[data-mode="dark"] .jwt-copy,[data-mode="dark"] .hash-copy,[data-mode="dark"] .hash-val,[data-mode="dark"] .jwt-body,[data-mode="dark"] .json-out,[data-mode="dark"] .rx-highlight-out,[data-mode="dark"] .uuid-item,[data-mode="dark"] .color-fmt{background:var(--surface)}
+[data-mode="dark"] .code-card:not(.empty),[data-mode="dark"] .tab.active,[data-mode="dark"] .copy-btn,[data-mode="dark"] .hash-val,[data-mode="dark"] .jwt-body,[data-mode="dark"] .json-out,[data-mode="dark"] .rx-highlight-out,[data-mode="dark"] .uuid-item,[data-mode="dark"] .color-fmt{background:var(--surface)}
 [data-mode="dark"] .tab.active{box-shadow:0 1px 3px oklch(0 0 0/.3),0 0 0 1px oklch(1 0 0/.06);color:var(--fg)}
 [data-mode="dark"] .color-fmt .cfv{color:var(--fg)}
 [data-mode="dark"] .swap-btn{background:var(--surface);border-color:var(--line);color:var(--fg-dim)}
@@ -349,7 +360,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   :root{--page-pad:16px}
   html,body{min-height:100%;overflow-x:hidden}
   body{display:block;padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(28px + env(safe-area-inset-bottom))}
-  .shell{width:auto;max-width:none;margin-inline:0}
+  .shell{width:100%;max-width:100%;min-width:0;margin-inline:0}
   .wordmark{margin-bottom:20px;padding-right:52px}
   .tabs-wrap{width:100%;max-width:100%;margin:0 0 22px;transform:none;overflow:hidden}
   .tabs{width:100%;max-width:100%}
@@ -484,7 +495,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="swap-row"><button class="swap-btn" id="b64-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
   <div class="flabel" style="margin-bottom:7px"><span id="b64-out-lbl">Base64 output</span><span class="fhint" id="b64-out-cnt"></span></div>
-  <div class="out-box"><div class="out-val empty" id="b64-out">Output will appear here</div><button class="copy-btn" id="b64-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+  <div class="out-box copyable" id="b64-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="b64-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
   <div class="ferr" id="b64-err">&nbsp;</div>
 </section>
 
@@ -503,7 +514,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="swap-row"><button class="swap-btn" id="url-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
   <div class="flabel" style="margin-bottom:7px"><span id="url-out-lbl">Encoded output</span><span class="fhint" id="url-out-cnt"></span></div>
-  <div class="out-box"><div class="out-val empty" id="url-out">Output will appear here</div><button class="copy-btn" id="url-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+  <div class="out-box copyable" id="url-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="url-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
   <div class="ferr" id="url-err">&nbsp;</div>
 </section>
 
@@ -523,7 +534,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="json-err-loc" id="json-err">&nbsp;</div>
   <div class="flabel" style="margin-bottom:7px"><span id="json-out-lbl">Output</span><span class="fhint" id="json-out-cnt"></span></div>
-  <div class="json-out empty" id="json-out">Output will appear here<button class="copy-btn" id="json-copy" style="position:absolute;right:8px;top:8px" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+  <div class="json-out copyable empty" id="json-out" role="button" tabindex="0" aria-label="Click to copy output">Output will appear here<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
 </section>
 
 <!-- ═══════════ JWT ═══════════ -->
@@ -537,16 +548,16 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   <div id="jwt-exp-banner" class="exp-banner no-exp" style="display:none"></div>
   <div class="jwt-parts">
     <div class="jwt-part">
-      <div class="jwt-ph"><span>Header</span><div class="right"><span class="badge" id="jwt-alg">—</span><button class="jwt-copy" id="jwt-hcopy" aria-label="Copy header"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div></div>
-      <div class="jwt-body empty" id="jwt-header">Paste a token above</div>
+      <div class="jwt-ph"><span>Header</span><div class="right"><span class="badge" id="jwt-alg">—</span></div></div>
+      <div class="jwt-body copyable empty" id="jwt-header" role="button" tabindex="0" aria-label="Click to copy header">Paste a token above<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
     </div>
     <div class="jwt-part">
-      <div class="jwt-ph"><span>Payload</span><div class="right"><span class="badge" id="jwt-exp-badge" style="display:none"></span><button class="jwt-copy" id="jwt-pcopy" aria-label="Copy payload"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div></div>
-      <div class="jwt-body empty" id="jwt-payload">—</div>
+      <div class="jwt-ph"><span>Payload</span><div class="right"><span class="badge" id="jwt-exp-badge" style="display:none"></span></div></div>
+      <div class="jwt-body copyable empty" id="jwt-payload" role="button" tabindex="0" aria-label="Click to copy payload">—<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
     </div>
     <div class="jwt-part">
       <div class="jwt-ph"><span>Signature</span><div class="right"><span class="badge" style="background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line);font-size:9px;padding:2px 8px;border-radius:100px;border:1px solid">Not verified</span></div></div>
-      <div class="jwt-body" id="jwt-sig" style="color:var(--fg-dim);font-size:11.5px;word-break:break-all">—</div>
+      <div class="jwt-body copyable empty" id="jwt-sig" role="button" tabindex="0" aria-label="Click to copy signature" style="color:var(--fg-dim);font-size:11.5px;word-break:break-all">—<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
     </div>
   </div>
   <section class="strip strip-2" id="jwt-time-strip" style="display:none">
@@ -567,9 +578,9 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
     <textarea id="hash-in" class="fi" rows="3" placeholder="Type something to hash…"></textarea>
   </label>
   <div class="hash-rows">
-    <div class="hash-row"><div class="hash-rh"><span>SHA-1</span><span style="opacity:.45;font-size:9px">160 bit · 40 hex chars</span></div><div class="hash-val empty" id="hash-sha1">—<button class="hash-copy" id="hc-sha1"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div></div>
-    <div class="hash-row"><div class="hash-rh"><span>SHA-256</span><span style="opacity:.45;font-size:9px">256 bit · 64 hex chars</span></div><div class="hash-val empty" id="hash-sha256">—<button class="hash-copy" id="hc-sha256"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div></div>
-    <div class="hash-row"><div class="hash-rh"><span>SHA-512</span><span style="opacity:.45;font-size:9px">512 bit · 128 hex chars</span></div><div class="hash-val empty" id="hash-sha512">—<button class="hash-copy" id="hc-sha512"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div></div>
+    <div class="hash-row"><div class="hash-rh"><span>SHA-1</span><span style="opacity:.45;font-size:9px">160 bit · 40 hex chars</span></div><div class="hash-val copyable empty" id="hash-sha1" role="button" tabindex="0" aria-label="Click to copy SHA-1">—<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div></div>
+    <div class="hash-row"><div class="hash-rh"><span>SHA-256</span><span style="opacity:.45;font-size:9px">256 bit · 64 hex chars</span></div><div class="hash-val copyable empty" id="hash-sha256" role="button" tabindex="0" aria-label="Click to copy SHA-256">—<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div></div>
+    <div class="hash-row"><div class="hash-rh"><span>SHA-512</span><span style="opacity:.45;font-size:9px">512 bit · 128 hex chars</span></div><div class="hash-val copyable empty" id="hash-sha512" role="button" tabindex="0" aria-label="Click to copy SHA-512">—<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div></div>
   </div>
 </section>
 
@@ -592,7 +603,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="swap-row"><button class="swap-btn" id="hex-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
   <div class="flabel" style="margin-bottom:7px"><span id="hex-out-lbl">Hex output</span><span class="fhint" id="hex-out-cnt"></span></div>
-  <div class="out-box"><div class="out-val empty" id="hex-out">Output will appear here</div><button class="copy-btn" id="hex-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+  <div class="out-box copyable" id="hex-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="hex-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
   <div class="ferr" id="hex-err">&nbsp;</div>
 </section>
 
@@ -611,7 +622,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="swap-row"><button class="swap-btn" id="html-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
   <div class="flabel" style="margin-bottom:7px"><span id="html-out-lbl">Encoded output</span></div>
-  <div class="out-box" style="margin-bottom:14px"><div class="out-val empty" id="html-out">Output will appear here</div><button class="copy-btn" id="html-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+  <div class="out-box copyable" id="html-out-box" role="button" tabindex="0" aria-label="Click to copy output" style="margin-bottom:14px"><div class="out-val empty" id="html-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
   <div class="flabel" style="margin-bottom:7px"><span>Common entities — click to copy</span></div>
   <div class="entity-ref" id="entity-ref"></div>
 </section>
@@ -674,10 +685,10 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="color-swatch" id="color-swatch">Enter a color above</div>
   <div class="color-formats">
-    <div class="color-fmt"><span class="cfk">HEX</span><span class="cfv empty" id="cfmt-hex">—</span><button class="copy-btn" id="ccopy-hex" aria-label="Copy HEX"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
-    <div class="color-fmt"><span class="cfk">RGB</span><span class="cfv empty" id="cfmt-rgb">—</span><button class="copy-btn" id="ccopy-rgb" aria-label="Copy RGB"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
-    <div class="color-fmt"><span class="cfk">HSL</span><span class="cfv empty" id="cfmt-hsl">—</span><button class="copy-btn" id="ccopy-hsl" aria-label="Copy HSL"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
-    <div class="color-fmt"><span class="cfk">oklch</span><span class="cfv empty" id="cfmt-oklch">—</span><button class="copy-btn" id="ccopy-oklch" aria-label="Copy oklch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+    <div class="color-fmt copyable" id="cbox-hex" data-fmt="hex" role="button" tabindex="0" aria-label="Click to copy HEX"><span class="cfk">HEX</span><span class="cfv empty" id="cfmt-hex">—</span><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+    <div class="color-fmt copyable" id="cbox-rgb" data-fmt="rgb" role="button" tabindex="0" aria-label="Click to copy RGB"><span class="cfk">RGB</span><span class="cfv empty" id="cfmt-rgb">—</span><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+    <div class="color-fmt copyable" id="cbox-hsl" data-fmt="hsl" role="button" tabindex="0" aria-label="Click to copy HSL"><span class="cfk">HSL</span><span class="cfv empty" id="cfmt-hsl">—</span><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+    <div class="color-fmt copyable" id="cbox-oklch" data-fmt="oklch" role="button" tabindex="0" aria-label="Click to copy oklch"><span class="cfk">oklch</span><span class="cfv empty" id="cfmt-oklch">—</span><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
   </div>
   <section class="strip strip-4" id="color-strip">
     <div class="cell"><div class="sk">Red</div><div class="sv muted" id="cs-r">—</div></div>
@@ -709,12 +720,12 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 <!-- ═══════════ UNIX ═══════════ -->
 <section class="panel" id="panel-unix">
   <div class="phead"><h1>Unix Timestamp</h1><p>Convert between Unix epoch seconds and human-readable dates. Local and UTC.</p></div>
-  <div class="unix-clock">
+  <div class="unix-clock copyable" id="unix-clock-box" role="button" tabindex="0" aria-label="Click to copy current timestamp">
     <div>
       <div class="lu" style="margin-bottom:3px">Current timestamp</div>
       <div class="lv" id="unix-live">—</div>
     </div>
-    <button class="copy-btn" id="unix-now-copy" style="position:static;flex-shrink:0" aria-label="Copy timestamp"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button>
+    <span class="copy-btn" aria-hidden="true" style="top:50%;transform:translateY(-50%)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span>
   </div>
   <div class="unix-cols">
     <div>
@@ -722,14 +733,14 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
         <span class="flabel" style="align-items:center"><span>Timestamp → Date</span><button class="use-now" id="use-now">Use now</button></span>
         <input id="ts-in" class="fi" type="text" placeholder="e.g. 1714363200" autocomplete="off" />
       </label>
-      <div class="out-box" style="margin-top:-8px"><div class="out-val empty" id="ts-out">—</div><button class="copy-btn" id="ts-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+      <div class="out-box copyable" id="ts-out-box" role="button" tabindex="0" aria-label="Click to copy date" style="margin-top:-8px"><div class="out-val empty" id="ts-out">—</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
     </div>
     <div>
       <label class="field">
         <span class="flabel"><span>Date → Timestamp</span></span>
         <input id="date-in" class="fi" type="datetime-local" />
       </label>
-      <div class="out-box" style="margin-top:-8px"><div class="out-val empty" id="date-out">—</div><button class="copy-btn" id="date-copy" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button></div>
+      <div class="out-box copyable" id="date-out-box" role="button" tabindex="0" aria-label="Click to copy timestamp" style="margin-top:-8px"><div class="out-val empty" id="date-out">—</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
     </div>
   </div>
   <section class="strip" id="unix-strip">
@@ -743,6 +754,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   <span class="priv"><span class="dot"></span>All computation local · no data stored</span>
   <span id="footer-ref">RFC 4648</span>
 </footer>
+<div class="legal">&copy; 2026 SUB&amp;SUB LLC &middot; All rights reserved</div>
 </main>
 
 <!-- ══ THEME TOGGLE ══ -->
@@ -779,11 +791,41 @@ function showToast(msg){
 async function copyText(text, msg='Copied'){
   try{ await navigator.clipboard.writeText(String(text)); showToast(msg); return true; }catch{ return false; }
 }
-function flashCopy(btn){
-  btn.classList.add('copied');
-  setTimeout(() => btn.classList.remove('copied'), 1500);
+function flashCopy(el){
+  if(!el)return;
+  el.classList.add('copied');
+  clearTimeout(el._copiedT);
+  el._copiedT=setTimeout(()=>el.classList.remove('copied'),1500);
 }
 const COPY_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg>`;
+const COPY_CUE_HTML = `<span class="copy-btn" aria-hidden="true">${COPY_SVG}</span>`;
+// Bind a .copyable container so clicking anywhere inside copies the value.
+// getValue() returns the string to copy; if container or any descendant has
+// .empty, or the value is blank/em-dash, nothing happens.
+function bindCopy(elOrId, getValue, msg='Copied'){
+  const el=typeof elOrId==='string'?$(elOrId):elOrId;
+  if(!el)return;
+  const handler=async()=>{
+    if(el.classList.contains('empty')||el.querySelector('.empty'))return;
+    const v=getValue();
+    if(v==null)return;
+    const s=String(v);
+    const t=s.trim();
+    if(!t||t==='—'||t==='-')return;
+    if(await copyText(s,msg)) flashCopy(el);
+  };
+  el.addEventListener('click',handler);
+  el.addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); handler(); }
+  });
+}
+// Replace text inside a .copyable container while preserving the .copy-btn cue.
+function setCopyText(el,text){
+  const cue=el.querySelector('.copy-btn');
+  el.textContent=text;
+  if(cue) el.appendChild(cue);
+  else el.insertAdjacentHTML('beforeend',COPY_CUE_HTML);
+}
 
 /* ═══════════════════════════════════════
    TABS
@@ -912,7 +954,7 @@ $('b64-swap').addEventListener('click',()=>{
   const newMode=b64mode==='encode'?'decode':'encode';
   document.querySelector(`[data-b64="${newMode}"]`).click();
 });
-$('b64-copy').addEventListener('click',async()=>{ const v=$('b64-out').textContent; if($('b64-out').classList.contains('empty'))return; if(await copyText(v,'Copied')) flashCopy($('b64-copy')); });
+bindCopy('b64-out-box',()=>$('b64-out').textContent);
 
 /* ═══════════════════════════════════════
    URL
@@ -934,7 +976,7 @@ document.querySelectorAll('[data-url]').forEach(btn=>{ btn.addEventListener('cli
 document.querySelectorAll('[data-urlm]').forEach(btn=>{ btn.addEventListener('click',()=>{ urlMeth=btn.dataset.urlm; document.querySelectorAll('[data-urlm]').forEach(b=>b.classList.toggle('active',b.dataset.urlm===urlMeth)); urlUpdate(); }); });
 $('url-in').addEventListener('input',urlUpdate);
 $('url-swap').addEventListener('click',()=>{ const out=$('url-out'); if(out.classList.contains('empty'))return; $('url-in').value=out.textContent; const nm=urlMode==='encode'?'decode':'encode'; document.querySelector(`[data-url="${nm}"]`).click(); });
-$('url-copy').addEventListener('click',async()=>{ const v=$('url-out').textContent; if($('url-out').classList.contains('empty'))return; if(await copyText(v,'Copied')) flashCopy($('url-copy')); });
+bindCopy('url-out-box',()=>$('url-out').textContent);
 
 /* ═══════════════════════════════════════
    JSON
@@ -973,7 +1015,7 @@ function jsonUpdate(){
 document.querySelectorAll('[data-json]').forEach(btn=>{ btn.addEventListener('click',()=>{ jsonMode=btn.dataset.json; document.querySelectorAll('[data-json]').forEach(b=>b.classList.toggle('active',b.dataset.json===jsonMode)); jsonUpdate(); }); });
 document.querySelectorAll('[data-indent]').forEach(btn=>{ btn.addEventListener('click',()=>{ jsonIndent=parseInt(btn.dataset.indent); document.querySelectorAll('[data-indent]').forEach(b=>b.classList.toggle('active',b.dataset.indent===btn.dataset.indent)); jsonUpdate(); }); });
 $('json-in').addEventListener('input',jsonUpdate);
-$('json-copy').addEventListener('click',async()=>{ const v=$('json-out').childNodes[0].textContent.trim(); if($('json-out').classList.contains('empty'))return; if(await copyText(v,'Copied')) flashCopy($('json-copy')); });
+bindCopy('json-out',()=>$('json-out').childNodes[0].textContent.trim());
 
 /* ═══════════════════════════════════════
    JWT
@@ -1000,9 +1042,9 @@ function jwtUpdateExpBanner(){
 }
 function jwtResetUI(emptyMsg){
   const hout=$('jwt-header'), pout=$('jwt-payload'), sout=$('jwt-sig');
-  hout.textContent=emptyMsg||'—'; hout.className='jwt-body empty';
-  pout.textContent='—'; pout.className='jwt-body empty';
-  sout.textContent='—';
+  setCopyText(hout,emptyMsg||'—'); hout.className='jwt-body copyable empty';
+  setCopyText(pout,'—'); pout.className='jwt-body copyable empty';
+  setCopyText(sout,'—'); sout.classList.add('empty');
   $('jwt-alg').textContent='—';
   $('jwt-exp-badge').style.display='none';
   $('jwt-time-strip').style.display='none';
@@ -1021,9 +1063,9 @@ function jwtRun(){
   jwtResetUI('—');
   try{
     const header=b64url(parts[0]), payload=b64url(parts[1]);
-    hout.textContent=JSON.stringify(header,null,2); hout.className='jwt-body';
-    pout.textContent=JSON.stringify(payload,null,2); pout.className='jwt-body';
-    sout.textContent=parts[2]; sout.style.wordBreak='break-all';
+    setCopyText(hout,JSON.stringify(header,null,2)); hout.className='jwt-body copyable';
+    setCopyText(pout,JSON.stringify(payload,null,2)); pout.className='jwt-body copyable';
+    setCopyText(sout,parts[2]); sout.classList.remove('empty'); sout.style.wordBreak='break-all';
     $('jwt-alg').textContent=header.alg||'—';
     if(payload.exp){
       jwtExpTs=payload.exp;
@@ -1040,8 +1082,10 @@ function jwtRun(){
   }catch(e){ jwtResetUI('—'); err.textContent='Could not decode token — '+e.message; err.classList.add('show'); }
 }
 $('jwt-in').addEventListener('input',jwtRun);
-$('jwt-hcopy').addEventListener('click',async()=>{ const v=$('jwt-header').textContent; if($('jwt-header').classList.contains('empty'))return; if(await copyText(v,'Header copied')) flashCopy($('jwt-hcopy')); });
-$('jwt-pcopy').addEventListener('click',async()=>{ const v=$('jwt-payload').textContent; if($('jwt-payload').classList.contains('empty'))return; if(await copyText(v,'Payload copied')) flashCopy($('jwt-pcopy')); });
+const jwtBodyText=el=>el.childNodes[0]?el.childNodes[0].textContent:'';
+bindCopy('jwt-header',()=>jwtBodyText($('jwt-header')),'Header copied');
+bindCopy('jwt-payload',()=>jwtBodyText($('jwt-payload')),'Payload copied');
+bindCopy('jwt-sig',()=>jwtBodyText($('jwt-sig')),'Signature copied');
 
 /* ═══════════════════════════════════════
    HASH
@@ -1061,7 +1105,7 @@ $('hash-in').addEventListener('input',async()=>{
   if(!v){ hashClear(); return; }
   await hashBytes(v);
 });
-['sha1','sha256','sha512'].forEach(a=>{ $(`hc-${a}`).addEventListener('click',async()=>{ const v=$(`hash-${a}`).childNodes[0].textContent; if(v==='—')return; if(await copyText(v,`SHA-${a.replace('sha','')} copied`)) flashCopy($(`hc-${a}`)); }); });
+['sha1','sha256','sha512'].forEach(a=>{ bindCopy(`hash-${a}`,()=>$(`hash-${a}`).childNodes[0].textContent,`SHA-${a.replace('sha','')} copied`); });
 // file drop
 const drop=$('hash-drop');
 drop.addEventListener('click',()=>{ const fi=document.createElement('input'); fi.type='file'; fi.onchange=async e=>{ const f=e.target.files[0]; if(!f)return; $('hash-drop-label').textContent=`Hashing ${f.name}…`; const ab=await f.arrayBuffer(); await hashBytes(new Uint8Array(ab)); $('hash-drop-label').textContent=`✓ ${f.name} (${(f.size/1024).toFixed(1)} KB)`; drop.classList.add('active'); }; fi.click(); });
@@ -1105,7 +1149,7 @@ document.querySelectorAll('[data-hex]').forEach(btn=>{ btn.addEventListener('cli
 document.querySelectorAll('[data-sep]').forEach(btn=>{ btn.addEventListener('click',()=>{ hexSep=btn.dataset.sep; document.querySelectorAll('[data-sep]').forEach(b=>b.classList.toggle('active',b.dataset.sep===hexSep)); hexUpdate(); }); });
 $('hex-in').addEventListener('input',hexUpdate);
 $('hex-swap').addEventListener('click',()=>{ const out=$('hex-out'); if(out.classList.contains('empty'))return; $('hex-in').value=out.textContent; const nm=hexMode==='encode'?'decode':'encode'; document.querySelector(`[data-hex="${nm}"]`).click(); });
-$('hex-copy').addEventListener('click',async()=>{ const v=$('hex-out').textContent; if($('hex-out').classList.contains('empty'))return; if(await copyText(v,'Copied')) flashCopy($('hex-copy')); });
+bindCopy('hex-out-box',()=>$('hex-out').textContent);
 
 /* ═══════════════════════════════════════
    HTML ENTITIES
@@ -1138,7 +1182,7 @@ document.querySelectorAll('[data-html]').forEach(btn=>{ btn.addEventListener('cl
 document.querySelectorAll('[data-htmlm]').forEach(btn=>{ btn.addEventListener('click',()=>{ htmlMeth=btn.dataset.htmlm; document.querySelectorAll('[data-htmlm]').forEach(b=>b.classList.toggle('active',b.dataset.htmlm===htmlMeth)); htmlUpdate(); }); });
 $('html-in').addEventListener('input',htmlUpdate);
 $('html-swap').addEventListener('click',()=>{ const out=$('html-out'); if(out.classList.contains('empty'))return; $('html-in').value=out.textContent; const nm=htmlMode==='encode'?'decode':'encode'; document.querySelector(`[data-html="${nm}"]`).click(); });
-$('html-copy').addEventListener('click',async()=>{ const v=$('html-out').textContent; if($('html-out').classList.contains('empty'))return; if(await copyText(v,'Copied')) flashCopy($('html-copy')); });
+bindCopy('html-out-box',()=>$('html-out').textContent);
 // entity reference grid
 const eref=$('entity-ref');
 ENTITIES.forEach(([char,entity])=>{
@@ -1296,7 +1340,7 @@ function colorUpdate(){
 $('color-in').addEventListener('input',colorUpdate);
 $('color-clear').addEventListener('click',()=>{ $('color-in').value=''; $('color-clear').classList.remove('show'); colorUpdate(); });
 $('color-in').addEventListener('input',()=>$('color-clear').classList.toggle('show',$('color-in').value.length>0));
-['hex','rgb','hsl','oklch'].forEach(k=>{ $(`ccopy-${k}`).addEventListener('click',async()=>{ const v=$(`cfmt-${k}`).textContent; if(v==='—')return; if(await copyText(v,'Copied')) flashCopy($(`ccopy-${k}`)); }); });
+['hex','rgb','hsl','oklch'].forEach(k=>{ bindCopy(`cbox-${k}`,()=>$(`cfmt-${k}`).textContent); });
 
 /* ═══════════════════════════════════════
    UUID
@@ -1311,9 +1355,13 @@ function renderUuids(n){
   const list=$('uuid-batch'); list.innerHTML='';
   for(let i=0;i<n;i++){
     const uuid=genUuid();
-    const div=document.createElement('div'); div.className='uuid-item';
-    div.innerHTML=`<span class="uuid-val">${uuid}</span><button class="copy-btn" aria-label="Copy">${COPY_SVG}</button>`;
-    div.querySelector('.copy-btn').addEventListener('click',async e=>{ if(await copyText(uuid,'UUID copied')) flashCopy(e.currentTarget); });
+    const div=document.createElement('div');
+    div.className='uuid-item copyable';
+    div.setAttribute('role','button');
+    div.setAttribute('tabindex','0');
+    div.setAttribute('aria-label','Click to copy UUID');
+    div.innerHTML=`<span class="uuid-val">${uuid}</span>${COPY_CUE_HTML}`;
+    bindCopy(div,()=>uuid,'UUID copied');
     list.appendChild(div);
   }
 }
@@ -1368,10 +1416,10 @@ $('date-in').addEventListener('input',()=>{
   if(isNaN(ts)){out.textContent='Invalid date';out.classList.add('empty');return;}
   out.textContent=ts; out.classList.remove('empty'); updateStrip(ts);
 });
-$('ts-copy').addEventListener('click',async()=>{ const v=$('ts-out').textContent; if(v==='—')return; if(await copyText(v,'Copied')) flashCopy($('ts-copy')); });
-$('date-copy').addEventListener('click',async()=>{ const v=$('date-out').textContent; if(v==='—')return; if(await copyText(v,'Copied')) flashCopy($('date-copy')); });
+bindCopy('ts-out-box',()=>$('ts-out').textContent);
+bindCopy('date-out-box',()=>$('date-out').textContent);
 $('use-now').addEventListener('click',()=>{ const now=Math.floor(Date.now()/1000); $('ts-in').value=now; $('ts-in').dispatchEvent(new Event('input')); });
-$('unix-now-copy').addEventListener('click',async()=>{ const v=$('unix-live').textContent; if(await copyText(v,'Timestamp copied')) flashCopy($('unix-now-copy')); });
+bindCopy('unix-clock-box',()=>$('unix-live').textContent,'Timestamp copied');
 // live clock + relative time refresh
 setInterval(()=>{
   $('unix-live').textContent=Math.floor(Date.now()/1000);
