@@ -1,7 +1,7 @@
 {
-  "name": "Decoder Tools",
-  "short_name": "Decoders",
-  "description": "Local decoder and converter tools for Base64, TOTP, JSON, JWT, hashes, colors, UUIDs, Unix time, and more.",
+  "name": "SUB&SUB Tools",
+  "short_name": "Tools",
+  "description": "Local-first developer tools: encoders, decoders, generators, formatters, hashes, regex, diff, color, UUID, password, QR, Unix time, and more.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
