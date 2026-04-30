@@ -8,9 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Tools">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f8faf7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#10120f" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" id="theme-color-meta" content="#f8faf7">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -132,7 +131,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .swap-btn svg{width:11px;height:11px}
 
 /* ── output box ── */
-.out-box{position:relative;background:var(--bg-sub);border:1px solid var(--line);border-radius:10px;padding:12px 42px 12px 13px;min-height:46px}
+.out-box{position:relative;background:var(--bg-sub);border:1px solid var(--line);border-radius:10px;padding:12px 110px 12px 13px;min-height:46px}
 .out-val{font-family:var(--mono);font-size:12.5px;color:var(--fg);line-height:1.65;white-space:pre-wrap;word-break:break-all}
 .out-val.empty{color:var(--fg-dim);font-weight:400;white-space:normal}
 .out-meta{font-family:var(--mono);font-size:10px;color:var(--fg-dim);margin-top:6px;letter-spacing:0.04em}
@@ -140,22 +139,23 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 /* ── 1Password-style click-to-copy: container itself is the button ── */
 .copyable{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s,background-color .15s,color .15s,box-shadow .15s,transform .08s}
 .copyable:hover{border-color:var(--line-hover)}
-.copyable:hover .copy-btn{color:var(--fg);border-color:var(--line-hover);background:var(--hover)}
+.copyable:hover .copy-btn{opacity:1;color:var(--fg-mid)}
 .copyable:active{transform:scale(.997)}
 /* empty state — derive from self or any descendant marked .empty */
 .copyable.empty,.copyable:has(.empty){cursor:default}
 .copyable.empty,.copyable.empty:hover,
 .copyable:has(.empty),.copyable:has(.empty):hover{border-color:var(--line)}
-.copyable.empty:hover .copy-btn,
-.copyable:has(.empty):hover .copy-btn{color:var(--fg-dim);border-color:var(--line);background:var(--surface)}
 .copyable.empty:active,.copyable:has(.empty):active{transform:none}
-.copyable.empty .copy-btn,.copyable:has(.empty) .copy-btn{opacity:.45}
+.copyable.empty .copy-btn,.copyable:has(.empty) .copy-btn{opacity:0}
 /* copied flash */
 .copyable.copied,.copyable.copied:hover{border-color:var(--accent-dim);background:var(--accent-bg)}
-.copyable.copied .copy-btn,.copyable.copied:hover .copy-btn{color:var(--accent);border-color:var(--accent-dim);background:var(--accent-bg);opacity:1}
-/* copy icon: visual cue only, click events go to .copyable container */
-.copy-btn{position:absolute;right:8px;top:8px;width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--fg-dim);display:grid;place-items:center;flex-shrink:0;pointer-events:none;transition:color .15s,border-color .15s,background-color .15s;font:inherit;padding:0}
-.copy-btn svg{width:12px;height:12px}
+.copyable.copied .copy-btn,.copyable.copied:hover .copy-btn{opacity:1;color:var(--accent)}
+/* copy cue: text-only "Click to copy" hint anchored on the right; non-interactive */
+.copy-btn{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);background:transparent;border:0;padding:0;pointer-events:none;white-space:nowrap;opacity:.55;transition:opacity .15s,color .15s}
+.copy-btn::after{content:'Click to copy'}
+.copyable.copied .copy-btn::after{content:'Copied'}
+/* multi-line / image containers anchor cue at top-right corner */
+.json-out .copy-btn,.jwt-body .copy-btn,.hash-val .copy-btn,.qr-stage .copy-btn{top:13px;transform:none}
 
 /* ── strip ── */
 .strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -210,7 +210,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .badge{font-size:9px;padding:2px 8px;border-radius:100px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-dim)}
 .badge.red{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-line)}
 .badge.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
-.jwt-body{position:relative;background:var(--surface);padding:11px 42px 11px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto}
+.jwt-body{position:relative;background:var(--surface);padding:30px 13px 11px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto}
 .jwt-body.empty{color:var(--fg-dim);font-style:italic;white-space:normal}
 .exp-banner{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;font-family:var(--mono);font-size:11px;margin-bottom:10px;letter-spacing:.03em}
 .exp-banner.valid{background:var(--accent-bg);color:var(--add-fg);border:1px solid var(--accent-dim)}
@@ -222,7 +222,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .hash-rows{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
 .hash-row{border-radius:10px;border:1px solid var(--line);overflow:hidden}
 .hash-rh{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:var(--bg-sub);font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);border-bottom:1px solid var(--line)}
-.hash-val{background:var(--surface);padding:10px 42px 10px 13px;font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--fg);word-break:break-all;line-height:1.5;position:relative;min-height:42px}
+.hash-val{background:var(--surface);padding:30px 13px 11px 13px;font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--fg);word-break:break-all;line-height:1.5;position:relative;min-height:62px}
 .hash-val.empty{color:var(--fg-dim);font-weight:400}
 .file-drop-hint{display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--line);border-radius:10px;padding:14px;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.07em;cursor:pointer;transition:all .15s;margin-bottom:14px}
 .file-drop-hint:hover{border-color:var(--accent-dim);color:var(--accent);background:var(--accent-bg)}
@@ -232,7 +232,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 /* ── JSON ── */
 .json-err-loc{font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:5px;opacity:0;transition:opacity .15s;min-height:14px}
 .json-err-loc.show{opacity:1}
-.json-out{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 42px 13px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto;position:relative;min-height:60px;max-height:360px;overflow-y:auto}
+.json-out{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:32px 13px 13px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto;position:relative;min-height:64px;max-height:360px;overflow-y:auto}
 .json-out.empty{color:var(--fg-dim);font-style:italic;white-space:normal}
 
 /* ── Hex ── */
@@ -282,23 +282,22 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .color-formats{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
 .color-fmt{background:var(--surface);border:1px solid var(--line);border-radius:10px;display:flex;align-items:center;gap:0;overflow:hidden}
 .color-fmt .cfk{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);padding:11px 12px;background:var(--bg-sub);border-right:1px solid var(--line);min-width:52px;text-align:center}
-.color-fmt .cfv{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--fg);padding:11px 40px 11px 13px;flex:1;word-break:break-all}
+.color-fmt .cfv{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--fg);padding:11px 110px 11px 13px;flex:1;word-break:break-all}
 .color-fmt .cfv.empty{color:var(--fg-dim);font-weight:400}
-.color-fmt .copy-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%)}
 .color-fmt{position:relative}
 
 /* ── UUID ── */
 .uuid-batch{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .uuid-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-family:var(--mono);font-size:12.5px;color:var(--fg)}
 .uuid-item .uuid-val{flex:1;word-break:break-all;letter-spacing:.02em}
-.uuid-item .copy-btn{position:static;flex-shrink:0;width:24px;height:24px}
+.uuid-item .copy-btn{position:static;transform:none;flex-shrink:0}
 .uuid-validate{background:var(--bg-sub);border:1px solid var(--line);border-radius:10px;padding:10px 13px;font-family:var(--mono);font-size:11.5px;margin-top:6px;min-height:40px;line-height:1.55}
 .uuid-validate.empty{color:var(--fg-dim)}
 .uuid-validate .valid{color:var(--add-fg)}
 .uuid-validate .invalid{color:var(--danger)}
 
 /* ── Unix ── */
-.unix-clock{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;padding:12px 50px 12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg-sub)}
+.unix-clock{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;padding:12px 115px 12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg-sub)}
 .unix-clock .lv{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .unix-clock .lu{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim)}
 .unix-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
@@ -339,7 +338,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .qr-stage.empty{background:var(--bg-sub);border-style:dashed}
 .qr-stage svg{display:block;width:min(100%,260px);height:auto;image-rendering:pixelated;-webkit-tap-highlight-color:transparent}
 .qr-stage .qr-empty-msg{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-dim);text-align:center;line-height:1.6}
-.qr-stage .copy-btn{top:10px;right:10px}
+.qr-stage .copy-btn{right:14px}
 .qr-meta{display:flex;justify-content:space-between;align-items:center;margin-top:-4px;margin-bottom:14px;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-dim)}
 .qr-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 
@@ -382,7 +381,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 /* component backgrounds */
 [data-mode="dark"] input.fi,[data-mode="dark"] textarea.fi{background:var(--surface);color:var(--fg);border-color:var(--line)}
 [data-mode="dark"] input.fi::placeholder,[data-mode="dark"] textarea.fi::placeholder{color:var(--fg-dim)}
-[data-mode="dark"] .code-card:not(.empty),[data-mode="dark"] .tab.active,[data-mode="dark"] .copy-btn,[data-mode="dark"] .hash-val,[data-mode="dark"] .jwt-body,[data-mode="dark"] .json-out,[data-mode="dark"] .rx-highlight-out,[data-mode="dark"] .uuid-item,[data-mode="dark"] .color-fmt{background:var(--surface)}
+[data-mode="dark"] .code-card:not(.empty),[data-mode="dark"] .tab.active,[data-mode="dark"] .hash-val,[data-mode="dark"] .jwt-body,[data-mode="dark"] .json-out,[data-mode="dark"] .rx-highlight-out,[data-mode="dark"] .uuid-item,[data-mode="dark"] .color-fmt{background:var(--surface)}
 [data-mode="dark"] .tab.active{box-shadow:0 1px 3px oklch(0 0 0/.3),0 0 0 1px oklch(1 0 0/.06);color:var(--fg)}
 [data-mode="dark"] .color-fmt .cfv{color:var(--fg)}
 [data-mode="dark"] .swap-btn{background:var(--surface);border-color:var(--line);color:var(--fg-dim)}
@@ -414,7 +413,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   .tog{min-height:34px;padding:7px 12px}
   .swap-row{margin:-6px 0 12px}
   .swap-btn,.use-now{min-height:32px}
-  .out-box{padding:12px 44px 12px 13px}
+  .out-box{padding:12px 110px 12px 13px}
   .strip,.strip-2,.strip-4{grid-template-columns:1fr}
   .strip .cell{padding:10px 12px}
   .code-card{border-radius:12px;padding:16px 14px 0}
@@ -560,7 +559,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="swap-row"><button class="swap-btn" id="b64-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
   <div class="flabel" style="margin-bottom:7px"><span id="b64-out-lbl">Base64 output</span><span class="fhint" id="b64-out-cnt"></span></div>
-  <div class="out-box copyable" id="b64-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="b64-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+  <div class="out-box copyable" id="b64-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="b64-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"></span></div>
   <div class="ferr" id="b64-err">&nbsp;</div>
 </section>
 
@@ -579,7 +578,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="swap-row"><button class="swap-btn" id="url-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
   <div class="flabel" style="margin-bottom:7px"><span id="url-out-lbl">Encoded output</span><span class="fhint" id="url-out-cnt"></span></div>
-  <div class="out-box copyable" id="url-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="url-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+  <div class="out-box copyable" id="url-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="url-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"></span></div>
   <div class="ferr" id="url-err">&nbsp;</div>
 </section>
 
@@ -599,7 +598,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="json-err-loc" id="json-err">&nbsp;</div>
   <div class="flabel" style="margin-bottom:7px"><span id="json-out-lbl">Output</span><span class="fhint" id="json-out-cnt"></span></div>
-  <div class="json-out copyable empty" id="json-out" role="button" tabindex="0" aria-label="Click to copy output">Output will appear here<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+  <div class="json-out copyable empty" id="json-out" role="button" tabindex="0" aria-label="Click to copy output">Output will appear here<span class="copy-btn" aria-hidden="true"></span></div>
 </section>
 
 <!-- ═══════════ JWT ═══════════ -->
@@ -614,15 +613,15 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   <div class="jwt-parts">
     <div class="jwt-part">
       <div class="jwt-ph"><span>Header</span><div class="right"><span class="badge" id="jwt-alg">—</span></div></div>
-      <div class="jwt-body copyable empty" id="jwt-header" role="button" tabindex="0" aria-label="Click to copy header">Paste a token above<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+      <div class="jwt-body copyable empty" id="jwt-header" role="button" tabindex="0" aria-label="Click to copy header">Paste a token above<span class="copy-btn" aria-hidden="true"></span></div>
     </div>
     <div class="jwt-part">
       <div class="jwt-ph"><span>Payload</span><div class="right"><span class="badge" id="jwt-exp-badge" style="display:none"></span></div></div>
-      <div class="jwt-body copyable empty" id="jwt-payload" role="button" tabindex="0" aria-label="Click to copy payload">—<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+      <div class="jwt-body copyable empty" id="jwt-payload" role="button" tabindex="0" aria-label="Click to copy payload">—<span class="copy-btn" aria-hidden="true"></span></div>
     </div>
     <div class="jwt-part">
       <div class="jwt-ph"><span>Signature</span><div class="right"><span class="badge" style="background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line);font-size:9px;padding:2px 8px;border-radius:100px;border:1px solid">Not verified</span></div></div>
-      <div class="jwt-body copyable empty" id="jwt-sig" role="button" tabindex="0" aria-label="Click to copy signature" style="color:var(--fg-dim);font-size:11.5px;word-break:break-all">—<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+      <div class="jwt-body copyable empty" id="jwt-sig" role="button" tabindex="0" aria-label="Click to copy signature" style="color:var(--fg-dim);font-size:11.5px;word-break:break-all">—<span class="copy-btn" aria-hidden="true"></span></div>
     </div>
   </div>
   <section class="strip strip-2" id="jwt-time-strip" style="display:none">
@@ -643,9 +642,9 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
     <textarea id="hash-in" class="fi" rows="3" placeholder="Type something to hash…"></textarea>
   </label>
   <div class="hash-rows">
-    <div class="hash-row"><div class="hash-rh"><span>SHA-1</span><span style="opacity:.45;font-size:9px">160 bit · 40 hex chars</span></div><div class="hash-val copyable empty" id="hash-sha1" role="button" tabindex="0" aria-label="Click to copy SHA-1">—<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div></div>
-    <div class="hash-row"><div class="hash-rh"><span>SHA-256</span><span style="opacity:.45;font-size:9px">256 bit · 64 hex chars</span></div><div class="hash-val copyable empty" id="hash-sha256" role="button" tabindex="0" aria-label="Click to copy SHA-256">—<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div></div>
-    <div class="hash-row"><div class="hash-rh"><span>SHA-512</span><span style="opacity:.45;font-size:9px">512 bit · 128 hex chars</span></div><div class="hash-val copyable empty" id="hash-sha512" role="button" tabindex="0" aria-label="Click to copy SHA-512">—<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div></div>
+    <div class="hash-row"><div class="hash-rh"><span>SHA-1</span><span style="opacity:.45;font-size:9px">160 bit · 40 hex chars</span></div><div class="hash-val copyable empty" id="hash-sha1" role="button" tabindex="0" aria-label="Click to copy SHA-1">—<span class="copy-btn" aria-hidden="true"></span></div></div>
+    <div class="hash-row"><div class="hash-rh"><span>SHA-256</span><span style="opacity:.45;font-size:9px">256 bit · 64 hex chars</span></div><div class="hash-val copyable empty" id="hash-sha256" role="button" tabindex="0" aria-label="Click to copy SHA-256">—<span class="copy-btn" aria-hidden="true"></span></div></div>
+    <div class="hash-row"><div class="hash-rh"><span>SHA-512</span><span style="opacity:.45;font-size:9px">512 bit · 128 hex chars</span></div><div class="hash-val copyable empty" id="hash-sha512" role="button" tabindex="0" aria-label="Click to copy SHA-512">—<span class="copy-btn" aria-hidden="true"></span></div></div>
   </div>
 </section>
 
@@ -668,7 +667,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="swap-row"><button class="swap-btn" id="hex-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
   <div class="flabel" style="margin-bottom:7px"><span id="hex-out-lbl">Hex output</span><span class="fhint" id="hex-out-cnt"></span></div>
-  <div class="out-box copyable" id="hex-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="hex-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+  <div class="out-box copyable" id="hex-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="hex-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"></span></div>
   <div class="ferr" id="hex-err">&nbsp;</div>
 </section>
 
@@ -687,7 +686,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="swap-row"><button class="swap-btn" id="html-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
   <div class="flabel" style="margin-bottom:7px"><span id="html-out-lbl">Encoded output</span></div>
-  <div class="out-box copyable" id="html-out-box" role="button" tabindex="0" aria-label="Click to copy output" style="margin-bottom:14px"><div class="out-val empty" id="html-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+  <div class="out-box copyable" id="html-out-box" role="button" tabindex="0" aria-label="Click to copy output" style="margin-bottom:14px"><div class="out-val empty" id="html-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"></span></div>
   <div class="flabel" style="margin-bottom:7px"><span>Common entities — click to copy</span></div>
   <div class="entity-ref" id="entity-ref"></div>
 </section>
@@ -750,10 +749,10 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   </label>
   <div class="color-swatch" id="color-swatch">Enter a color above</div>
   <div class="color-formats">
-    <div class="color-fmt copyable" id="cbox-hex" data-fmt="hex" role="button" tabindex="0" aria-label="Click to copy HEX"><span class="cfk">HEX</span><span class="cfv empty" id="cfmt-hex">—</span><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
-    <div class="color-fmt copyable" id="cbox-rgb" data-fmt="rgb" role="button" tabindex="0" aria-label="Click to copy RGB"><span class="cfk">RGB</span><span class="cfv empty" id="cfmt-rgb">—</span><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
-    <div class="color-fmt copyable" id="cbox-hsl" data-fmt="hsl" role="button" tabindex="0" aria-label="Click to copy HSL"><span class="cfk">HSL</span><span class="cfv empty" id="cfmt-hsl">—</span><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
-    <div class="color-fmt copyable" id="cbox-oklch" data-fmt="oklch" role="button" tabindex="0" aria-label="Click to copy oklch"><span class="cfk">oklch</span><span class="cfv empty" id="cfmt-oklch">—</span><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+    <div class="color-fmt copyable" id="cbox-hex" data-fmt="hex" role="button" tabindex="0" aria-label="Click to copy HEX"><span class="cfk">HEX</span><span class="cfv empty" id="cfmt-hex">—</span><span class="copy-btn" aria-hidden="true"></span></div>
+    <div class="color-fmt copyable" id="cbox-rgb" data-fmt="rgb" role="button" tabindex="0" aria-label="Click to copy RGB"><span class="cfk">RGB</span><span class="cfv empty" id="cfmt-rgb">—</span><span class="copy-btn" aria-hidden="true"></span></div>
+    <div class="color-fmt copyable" id="cbox-hsl" data-fmt="hsl" role="button" tabindex="0" aria-label="Click to copy HSL"><span class="cfk">HSL</span><span class="cfv empty" id="cfmt-hsl">—</span><span class="copy-btn" aria-hidden="true"></span></div>
+    <div class="color-fmt copyable" id="cbox-oklch" data-fmt="oklch" role="button" tabindex="0" aria-label="Click to copy oklch"><span class="cfk">oklch</span><span class="cfv empty" id="cfmt-oklch">—</span><span class="copy-btn" aria-hidden="true"></span></div>
   </div>
   <section class="strip strip-4" id="color-strip">
     <div class="cell"><div class="sk">Red</div><div class="sv muted" id="cs-r">—</div></div>
@@ -817,7 +816,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
       <div class="lu" style="margin-bottom:3px">Current timestamp</div>
       <div class="lv" id="unix-live">—</div>
     </div>
-    <span class="copy-btn" aria-hidden="true" style="top:50%;transform:translateY(-50%)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span>
+    <span class="copy-btn" aria-hidden="true"></span>
   </div>
   <div class="unix-cols">
     <div>
@@ -825,14 +824,14 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
         <span class="flabel" style="align-items:center"><span>Timestamp → Date</span><button class="use-now" id="use-now">Use now</button></span>
         <input id="ts-in" class="fi" type="text" placeholder="e.g. 1714363200" autocomplete="off" />
       </label>
-      <div class="out-box copyable" id="ts-out-box" role="button" tabindex="0" aria-label="Click to copy date" style="margin-top:-8px"><div class="out-val empty" id="ts-out">—</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+      <div class="out-box copyable" id="ts-out-box" role="button" tabindex="0" aria-label="Click to copy date" style="margin-top:-8px"><div class="out-val empty" id="ts-out">—</div><span class="copy-btn" aria-hidden="true"></span></div>
     </div>
     <div>
       <label class="field">
         <span class="flabel"><span>Date → Timestamp</span></span>
         <input id="date-in" class="fi" type="datetime-local" />
       </label>
-      <div class="out-box copyable" id="date-out-box" role="button" tabindex="0" aria-label="Click to copy timestamp" style="margin-top:-8px"><div class="out-val empty" id="date-out">—</div><span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span></div>
+      <div class="out-box copyable" id="date-out-box" role="button" tabindex="0" aria-label="Click to copy timestamp" style="margin-top:-8px"><div class="out-val empty" id="date-out">—</div><span class="copy-btn" aria-hidden="true"></span></div>
     </div>
   </div>
   <section class="strip" id="unix-strip">
@@ -855,8 +854,8 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   <div class="tp-lbl">Mode</div>
   <div class="tp-modes">
     <button class="tp-mode" data-mode="auto"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg>Auto</button>
-    <button class="tp-mode" data-mode="light"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.5 3.5l.7.7M11.8 11.8l.7.7M11.8 3.5l-.7.7M3.5 11.8l-.7.7"/></svg>Light</button>
-    <button class="tp-mode" data-mode="dark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 10A6 6 0 016 4a6 6 0 000 8 6 6 0 006-2z"/></svg>Dark</button>
+    <button class="tp-mode" data-mode="light"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="1.6" y="1.6" width="8.4" height="8.4" rx="2.2"/><rect x="5.6" y="5.6" width="8.4" height="8.4" rx="2.2" fill="currentColor" stroke="none"/></svg>Light</button>
+    <button class="tp-mode" data-mode="dark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="1.6" y="1.6" width="8.4" height="8.4" rx="2.2" fill="currentColor" stroke="none"/><rect x="5.6" y="5.6" width="8.4" height="8.4" rx="2.2"/></svg>Dark</button>
   </div>
   <div class="tp-divider"></div>
   <div class="tp-lbl">Palette</div>
@@ -889,8 +888,7 @@ function flashCopy(el){
   clearTimeout(el._copiedT);
   el._copiedT=setTimeout(()=>el.classList.remove('copied'),1500);
 }
-const COPY_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg>`;
-const COPY_CUE_HTML = `<span class="copy-btn" aria-hidden="true">${COPY_SVG}</span>`;
+const COPY_CUE_HTML = `<span class="copy-btn" aria-hidden="true"></span>`;
 // Bind a .copyable container so clicking anywhere inside copies the value.
 // getValue() returns the string to copy; if container or any descendant has
 // .empty, or the value is blank/em-dash, nothing happens.
@@ -1828,7 +1826,7 @@ function qrUpdate(){
     const qr=QR.encode(v,qrLevel);
     const svg=QR.toSvg(qr);
     stage.classList.remove('empty');
-    stage.innerHTML=svg+'<span class="copy-btn" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></span>';
+    stage.innerHTML=svg+'<span class="copy-btn" aria-hidden="true"></span>';
     qrLastSvg=svg; qrLastVer=qr.version;
     info.textContent=`v${qr.version} · ${qr.size}×${qr.size} · ECC ${qrLevel} · mask ${qr.mask}`;
     cap.textContent=`${v.length} chars`;
@@ -2077,11 +2075,21 @@ function paletteTheme(dark,{h,c}){
     '--page-glow':`oklch(0.94 ${Math.max(c*.20,.025)} ${h} / .62)`,
   };
 }
+function syncThemeColor(){
+  const probe=document.createElement('span');
+  probe.style.cssText='position:absolute;left:-9999px;top:-9999px;visibility:hidden;background:var(--bg)';
+  document.body.appendChild(probe);
+  const bg=getComputedStyle(probe).backgroundColor;
+  probe.remove();
+  const m=document.getElementById('theme-color-meta');
+  if(m&&bg) m.setAttribute('content',bg);
+}
 function applyTheme(){
   const dark=isDarkNow(),selected=PALETTES.find(x=>x.id===tPal),root=document.documentElement;
   root.setAttribute('data-mode',dark?'dark':'light');
   const vars=selected?paletteTheme(dark,selected):BASE_THEMES[dark?'dark':'light'];
   Object.entries(vars).forEach(([k,v])=>setThemeVar(k,v));
+  syncThemeColor();
   const ICONS={
     auto:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg>`,
     light:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.5 3.5l.7.7M11.8 11.8l.7.7M11.8 3.5l-.7.7M3.5 11.8l-.7.7"/></svg>`,
