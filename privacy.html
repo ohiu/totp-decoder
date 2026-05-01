@@ -80,14 +80,14 @@ code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px
 .legal{
   position:fixed;left:0;right:0;bottom:0;z-index:8500;
   width:auto;max-width:none;margin:0;
-  padding:10px var(--page-pad) 8px;
+  padding:8px var(--page-pad) 4px;
   text-align:center;font-family:var(--mono);font-size:10px;
   color:var(--fg-mid);letter-spacing:.14em;text-transform:uppercase;
-  background:color-mix(in oklch, var(--bg) 92%, transparent);
-  -webkit-backdrop-filter:saturate(160%) blur(22px);
-          backdrop-filter:saturate(160%) blur(22px);
+  background:color-mix(in oklch, var(--bg) 65%, transparent);
+  -webkit-backdrop-filter:saturate(140%) blur(8px);
+          backdrop-filter:saturate(140%) blur(8px);
   border-top:1px solid var(--line-2);
-  box-shadow:0 -6px 24px oklch(0 0 0 / .06);
+  box-shadow:0 -4px 18px oklch(0 0 0 / .04);
 }
 /* fallback when backdrop-filter isn't supported: fully solid */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
