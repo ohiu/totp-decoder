@@ -398,11 +398,16 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   html,body{min-height:100%;overflow-x:hidden}
   body{align-items:stretch;padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(var(--legal-h) + env(safe-area-inset-bottom) + 14px)}
   .shell{width:auto;max-width:100%;min-width:0;margin:0 0 auto}
-  /* pin SUB&SUB legal strip to the visible viewport bottom on mobile */
+  /* pin SUB&SUB legal strip flush to the viewport bottom on mobile.
+     Note: in iOS PWA standalone, env(safe-area-inset-bottom) is ~34px
+     (home-indicator zone). We deliberately do NOT add it to the bottom
+     padding here, otherwise the text floats ~34px above the screen
+     edge in PWA mode while looking flush in Safari. The translucent
+     home-indicator bar sits over our background, which is fine. */
   .legal{
     position:fixed;left:0;right:0;bottom:0;z-index:8500;
     width:auto;max-width:none;margin:0;
-    padding:8px var(--page-pad) max(env(safe-area-inset-bottom), 8px);
+    padding:8px var(--page-pad) 8px;
     background:color-mix(in oklch, var(--bg) 78%, transparent);
     -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
     border-top:1px solid var(--line-2);

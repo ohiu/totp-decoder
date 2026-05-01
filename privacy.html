@@ -4,7 +4,13 @@
 <meta charset="utf-8">
 <title>Privacy Policy · SUB&amp;SUB Tools</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="application-name" content="SUB&amp;SUB Tools">
+<meta name="apple-mobile-web-app-title" content="Tools">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#f8faf7">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,13 +70,17 @@ a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;t
 a:hover{border-bottom-color:var(--accent)}
 code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px solid var(--line-2);padding:1px 6px;border-radius:5px}
 .callout{background:var(--bg-sub);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:14px 16px;margin:18px 0;font-size:13.5px;color:var(--fg-mid);line-height:1.55}
-/* frosted-glass legal bar pinned to viewport bottom on every screen */
+/* frosted-glass legal bar pinned to viewport bottom on every screen.
+   In iOS PWA standalone, env(safe-area-inset-bottom) is ~34px reserved
+   for the home-indicator gesture bar. If we add it as padding, the text
+   floats 34px above the screen edge — which is what was happening before.
+   We intentionally use a fixed small bottom padding instead, so the bar
+   hugs the actual screen bottom in PWA mode. The translucent iOS
+   home-indicator bar overlays our background harmlessly. */
 .legal{
   position:fixed;left:0;right:0;bottom:0;z-index:8500;
   width:auto;max-width:none;margin:0;
-  /* hug the bottom: in PWA the safe-area is already the home-indicator gap,
-     so we add no extra space below it */
-  padding:10px var(--page-pad) max(env(safe-area-inset-bottom), 8px);
+  padding:10px var(--page-pad) 8px;
   text-align:center;font-family:var(--mono);font-size:10px;
   color:var(--fg-mid);letter-spacing:.14em;text-transform:uppercase;
   background:color-mix(in oklch, var(--bg) 92%, transparent);
