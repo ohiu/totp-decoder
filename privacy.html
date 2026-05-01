@@ -90,6 +90,13 @@ code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px
   border-top:1px solid var(--line-2);
   box-shadow:0 -4px 18px oklch(0 0 0 / .04);
 }
+/* In PWA standalone (added to home screen) the safe-area inset already
+   reserves the home-indicator gap, so we want the bar to hug the actual
+   bottom edge much more tightly than in regular Safari (where the
+   browser chrome already takes that space). */
+@media (display-mode: standalone){
+  .legal{padding-top:6px;padding-bottom:2px}
+}
 /* fallback when backdrop-filter isn't supported: fully solid */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .legal{background:var(--bg)}
