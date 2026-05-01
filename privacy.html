@@ -64,17 +64,34 @@ a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;t
 a:hover{border-bottom-color:var(--accent)}
 code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px solid var(--line-2);padding:1px 6px;border-radius:5px}
 .callout{background:var(--bg-sub);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:14px 16px;margin:18px 0;font-size:13.5px;color:var(--fg-mid);line-height:1.55}
-.legal{width:min(720px,calc(100vw - (var(--page-pad) * 2)));margin-top:32px;padding-top:14px;border-top:1px solid var(--line-2);text-align:center;font-family:var(--mono);font-size:9px;color:var(--fg-dim);letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+/* frosted-glass legal bar pinned to viewport bottom on every screen */
+.legal{
+  position:fixed;left:0;right:0;bottom:0;z-index:8500;
+  width:auto;max-width:none;margin:0;
+  padding:12px var(--page-pad) calc(12px + env(safe-area-inset-bottom));
+  text-align:center;font-family:var(--mono);font-size:10px;
+  color:var(--fg-mid);letter-spacing:.14em;text-transform:uppercase;
+  background:color-mix(in oklch, var(--bg) 92%, transparent);
+  -webkit-backdrop-filter:saturate(160%) blur(22px);
+          backdrop-filter:saturate(160%) blur(22px);
+  border-top:1px solid var(--line-2);
+  box-shadow:0 -6px 24px oklch(0 0 0 / .06);
+}
+/* fallback when backdrop-filter isn't supported: fully solid */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .legal{background:var(--bg)}
+}
 .legal a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--fg-dim);padding-bottom:1px}
 .legal a:hover{color:var(--fg);border-bottom-color:var(--fg)}
 .legal .sep{margin:0 8px;opacity:.6}
+/* leave room so the fixed bar never covers content */
+body{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
 @media(max-width:640px){
   :root{--page-pad:16px}
-  body{padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(56px + env(safe-area-inset-bottom))}
+  body{padding-top:calc(18px + env(safe-area-inset-top));padding-bottom:calc(56px + env(safe-area-inset-bottom))}
   .shell{width:auto;max-width:100%;margin:0 0 auto}
   h1{font-size:22px}
   p,li{font-size:15px}
-  .legal{position:fixed;left:0;right:0;bottom:0;width:auto;max-width:none;margin:0;padding:10px var(--page-pad) calc(10px + env(safe-area-inset-bottom));background:color-mix(in oklch, var(--bg) 78%, transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line-2)}
 }
 </style>
 </head>
@@ -172,6 +189,6 @@ code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px
   </p>
 </main>
 
-<div class="legal">&copy; 2026 SUB&amp;SUB LLC &middot; All rights reserved<span class="sep">·</span><a href="index.html">Tools</a></div>
+<div class="legal">&copy; 2026 SUB&amp;SUB LLC &middot; All rights reserved</div>
 </body>
 </html>
