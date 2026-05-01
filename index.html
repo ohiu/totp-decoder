@@ -242,8 +242,11 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .entity-ref{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}
 .entity-ref .ec{background:var(--bg-sub);padding:7px 9px;display:flex;justify-content:space-between;align-items:center;gap:6px;cursor:pointer;transition:background .12s}
 .entity-ref .ec:hover{background:var(--hover)}
-.entity-ref .ec .char{font-family:var(--mono);font-size:14px;color:var(--fg)}
-.entity-ref .ec .ent{font-family:var(--mono);font-size:10px;color:var(--fg-dim)}
+.entity-ref .ec.copied,.entity-ref .ec.copied:hover{background:var(--accent-bg)}
+.entity-ref .ec.copied .char{color:var(--accent)}
+.entity-ref .ec.copied .ent{color:var(--accent)}
+.entity-ref .ec .char{font-family:var(--mono);font-size:14px;color:var(--fg);transition:color .12s}
+.entity-ref .ec .ent{font-family:var(--mono);font-size:10px;color:var(--fg-dim);transition:color .12s}
 
 /* ── Regex ── */
 .rx-pattern-row{display:flex;gap:8px;margin-bottom:10px;align-items:stretch}
@@ -350,10 +353,6 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 .legal a{color:inherit;text-decoration:none}
 .legal a:hover{color:var(--fg)}
 
-/* ── toast ── */
-.toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,14px);background:var(--fg);color:var(--bg);font-family:var(--mono);font-size:11px;letter-spacing:.04em;padding:8px 14px;border-radius:8px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;display:inline-flex;align-items:center;gap:8px;z-index:999}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-.toast svg{width:11px;height:11px;color:var(--accent-dim)}
 
 /* ══ THEME SWITCHER ══ */
 .theme-btn{position:fixed;top:16px;right:20px;z-index:9000;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--bg-sub);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s;backdrop-filter:blur(8px)}
@@ -444,7 +443,22 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   footer .priv{line-height:1.5}
   .theme-btn{top:calc(10px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));width:40px;height:40px;border-radius:11px}
   .theme-panel{top:calc(58px + env(safe-area-inset-top));right:var(--page-pad);left:var(--page-pad);width:auto}
-  .toast{bottom:calc(18px + env(safe-area-inset-bottom));max-width:calc(100vw - 32px)}
+}
+
+@media(max-width:480px){
+  /* shorter cue gives content area more room */
+  .copy-btn::after{content:'Copy'}
+  .copyable.copied .copy-btn::after{content:'Copied'}
+  .out-box{padding:12px 60px 12px 13px}
+  .color-fmt .cfv{padding-right:60px}
+  .unix-clock{padding:12px 60px 12px 14px}
+  /* multi-line containers: cue is at top, no horizontal squeeze; just trim min-height */
+  .hash-val{min-height:52px;padding-top:28px}
+  .json-out{padding-top:30px;min-height:60px}
+  .jwt-body{padding-top:28px}
+  /* avoid abrupt wrap of the live status pill in TOTP cmeta */
+  .cmeta{gap:4px 10px;flex-wrap:wrap}
+  .cmeta .live{flex-shrink:0}
 }
 
 @media(max-width:400px){
@@ -452,6 +466,8 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   .tab{padding-inline:11px}
   .toggle-row{gap:5px}
   .tog{font-size:9.5px;padding-inline:10px}
+  /* compact QR error-correction button labels so they stay one row */
+  .tog[data-qec]{padding-inline:8px;letter-spacing:.05em}
   .copy-hint{gap:5px}
   .cfoot{font-size:9.5px}
   .unix-clock .lv{font-size:20px}
@@ -862,25 +878,13 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   <div class="tp-palette" id="tp-palette"></div>
 </div>
 
-<div class="toast" id="toast">
-  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 5"/></svg>
-  <span id="toast-msg">Copied</span>
-</div>
-
 <script>
 /* ═══════════════════════════════════════
    SHARED
 ═══════════════════════════════════════ */
 const $ = id => document.getElementById(id);
-let _toastT;
-function showToast(msg){
-  $('toast-msg').textContent = msg;
-  $('toast').classList.add('show');
-  clearTimeout(_toastT);
-  _toastT = setTimeout(() => $('toast').classList.remove('show'), 1600);
-}
-async function copyText(text, msg='Copied'){
-  try{ await navigator.clipboard.writeText(String(text)); showToast(msg); return true; }catch{ return false; }
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(String(text)); return true; }catch{ return false; }
 }
 function flashCopy(el){
   if(!el)return;
@@ -892,7 +896,7 @@ const COPY_CUE_HTML = `<span class="copy-btn" aria-hidden="true"></span>`;
 // Bind a .copyable container so clicking anywhere inside copies the value.
 // getValue() returns the string to copy; if container or any descendant has
 // .empty, or the value is blank/em-dash, nothing happens.
-function bindCopy(elOrId, getValue, msg='Copied'){
+function bindCopy(elOrId, getValue){
   const el=typeof elOrId==='string'?$(elOrId):elOrId;
   if(!el)return;
   const handler=async()=>{
@@ -902,7 +906,7 @@ function bindCopy(elOrId, getValue, msg='Copied'){
     const s=String(v);
     const t=s.trim();
     if(!t||t==='—'||t==='-')return;
-    if(await copyText(s,msg)) flashCopy(el);
+    if(await copyText(s)) flashCopy(el);
   };
   el.addEventListener('click',handler);
   el.addEventListener('keydown',e=>{
@@ -1010,8 +1014,8 @@ async function totpTick(){
 }
 $('totp-secret').addEventListener('input',()=>{ const v=$('totp-secret').value; $('totp-len').textContent=`${v.replace(/\s+/g,'').length} chars`; $('totp-clear').classList.toggle('show',v.length>0); tLastCtr=-1; totpTick(); });
 $('totp-clear').addEventListener('click',()=>{ $('totp-secret').value=''; $('totp-len').textContent='0 chars'; $('totp-clear').classList.remove('show'); totpReset('waiting'); totpErr(''); $('totp-secret').focus(); });
-async function totpCopy(){ if(!tCur)return; await copyText(tCur,'Code copied'); const h=$('totp-copyhint'),l=$('totp-copylabel'),c=$('totp-code'); h.classList.add('copied'); c.classList.add('copied'); l.textContent='Copied'; clearTimeout(totpCopy._t); totpCopy._t=setTimeout(()=>{ h.classList.remove('copied'); c.classList.remove('copied'); l.textContent='Click to copy'; },1500); }
-async function totpCopyN(kind){ const code=kind==='prev'?tPrev:tNext,btn=$(kind==='prev'?'totp-prev':'totp-next'); if(!code)return; if(await copyText(code,kind==='prev'?'Previous code copied':'Next code copied')) flashCopy(btn); }
+async function totpCopy(){ if(!tCur)return; await copyText(tCur); const h=$('totp-copyhint'),l=$('totp-copylabel'),c=$('totp-code'); h.classList.add('copied'); c.classList.add('copied'); l.textContent='Copied'; clearTimeout(totpCopy._t); totpCopy._t=setTimeout(()=>{ h.classList.remove('copied'); c.classList.remove('copied'); l.textContent='Click to copy'; },1500); }
+async function totpCopyN(kind){ const code=kind==='prev'?tPrev:tNext,btn=$(kind==='prev'?'totp-prev':'totp-next'); if(!code)return; if(await copyText(code)) flashCopy(btn); }
 $('totp-code').addEventListener('click',totpCopy);
 $('totp-prev').addEventListener('click',()=>totpCopyN('prev'));
 $('totp-next').addEventListener('click',()=>totpCopyN('next'));
@@ -1173,9 +1177,9 @@ function jwtRun(){
 }
 $('jwt-in').addEventListener('input',jwtRun);
 const jwtBodyText=el=>el.childNodes[0]?el.childNodes[0].textContent:'';
-bindCopy('jwt-header',()=>jwtBodyText($('jwt-header')),'Header copied');
-bindCopy('jwt-payload',()=>jwtBodyText($('jwt-payload')),'Payload copied');
-bindCopy('jwt-sig',()=>jwtBodyText($('jwt-sig')),'Signature copied');
+bindCopy('jwt-header',()=>jwtBodyText($('jwt-header')));
+bindCopy('jwt-payload',()=>jwtBodyText($('jwt-payload')));
+bindCopy('jwt-sig',()=>jwtBodyText($('jwt-sig')));
 
 /* ═══════════════════════════════════════
    HASH
@@ -1195,7 +1199,7 @@ $('hash-in').addEventListener('input',async()=>{
   if(!v){ hashClear(); return; }
   await hashBytes(v);
 });
-['sha1','sha256','sha512'].forEach(a=>{ bindCopy(`hash-${a}`,()=>$(`hash-${a}`).childNodes[0].textContent,`SHA-${a.replace('sha','')} copied`); });
+['sha1','sha256','sha512'].forEach(a=>{ bindCopy(`hash-${a}`,()=>$(`hash-${a}`).childNodes[0].textContent); });
 // file drop
 const drop=$('hash-drop');
 drop.addEventListener('click',()=>{ const fi=document.createElement('input'); fi.type='file'; fi.onchange=async e=>{ const f=e.target.files[0]; if(!f)return; $('hash-drop-label').textContent=`Hashing ${f.name}…`; const ab=await f.arrayBuffer(); await hashBytes(new Uint8Array(ab)); $('hash-drop-label').textContent=`✓ ${f.name} (${(f.size/1024).toFixed(1)} KB)`; drop.classList.add('active'); }; fi.click(); });
@@ -1278,7 +1282,7 @@ const eref=$('entity-ref');
 ENTITIES.forEach(([char,entity])=>{
   const ec=document.createElement('div'); ec.className='ec';
   ec.innerHTML=`<span class="char">${entity==='&amp;'?'&amp;':char}</span><span class="ent">${entity}</span>`;
-  ec.addEventListener('click',async()=>{ await copyText(entity,`${entity} copied`); flashCopy(ec); });
+  ec.addEventListener('click',async()=>{ if(await copyText(entity)) flashCopy(ec); });
   eref.appendChild(ec);
 });
 
@@ -1451,7 +1455,7 @@ function renderUuids(n){
     div.setAttribute('tabindex','0');
     div.setAttribute('aria-label','Click to copy UUID');
     div.innerHTML=`<span class="uuid-val">${uuid}</span>${COPY_CUE_HTML}`;
-    bindCopy(div,()=>uuid,'UUID copied');
+    bindCopy(div,()=>uuid);
     list.appendChild(div);
   }
 }
@@ -1546,7 +1550,7 @@ document.querySelectorAll('[data-pexcl]').forEach(b=>{
   b.addEventListener('click',()=>{ pwdState.excludeAmbig=!pwdState.excludeAmbig; b.classList.toggle('active'); pwdRender(); });
 });
 $('pwd-regen').addEventListener('click',e=>{ e.stopPropagation(); pwdRender(); const r=$('pwd-regen'); r.classList.add('copied'); setTimeout(()=>r.classList.remove('copied'),300); });
-bindCopy('pwd-card',()=>pwdState.current,'Password copied');
+bindCopy('pwd-card',()=>pwdState.current);
 pwdRender();
 
 /* ═══════════════════════════════════════
@@ -1841,7 +1845,7 @@ $('qr-in').addEventListener('input',qrUpdate);
 document.querySelectorAll('[data-qec]').forEach(b=>{
   b.addEventListener('click',()=>{ qrLevel=b.dataset.qec; document.querySelectorAll('[data-qec]').forEach(x=>x.classList.toggle('active',x.dataset.qec===qrLevel)); qrUpdate(); });
 });
-bindCopy('qr-stage',()=>qrLastSvg,'SVG copied');
+bindCopy('qr-stage',()=>qrLastSvg);
 function qrDownload(filename, blob){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click();
@@ -1904,7 +1908,7 @@ $('date-in').addEventListener('input',()=>{
 bindCopy('ts-out-box',()=>$('ts-out').textContent);
 bindCopy('date-out-box',()=>$('date-out').textContent);
 $('use-now').addEventListener('click',()=>{ const now=Math.floor(Date.now()/1000); $('ts-in').value=now; $('ts-in').dispatchEvent(new Event('input')); });
-bindCopy('unix-clock-box',()=>$('unix-live').textContent,'Timestamp copied');
+bindCopy('unix-clock-box',()=>$('unix-live').textContent);
 // live clock + relative time refresh
 setInterval(()=>{
   $('unix-live').textContent=Math.floor(Date.now()/1000);
