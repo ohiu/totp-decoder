@@ -80,21 +80,21 @@ code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px
 .legal{
   position:fixed;left:0;right:0;bottom:0;z-index:8500;
   width:auto;max-width:none;margin:0;
-  padding:8px var(--page-pad) 4px;
+  padding:10px var(--page-pad) 8px;
   text-align:center;font-family:var(--mono);font-size:10px;
   color:var(--fg-mid);letter-spacing:.14em;text-transform:uppercase;
-  background:color-mix(in oklch, var(--bg) 65%, transparent);
-  -webkit-backdrop-filter:saturate(140%) blur(8px);
-          backdrop-filter:saturate(140%) blur(8px);
+  background:color-mix(in oklch, var(--bg) 92%, transparent);
+  -webkit-backdrop-filter:saturate(160%) blur(22px);
+          backdrop-filter:saturate(160%) blur(22px);
   border-top:1px solid var(--line-2);
-  box-shadow:0 -4px 18px oklch(0 0 0 / .04);
+  box-shadow:0 -6px 24px oklch(0 0 0 / .06);
 }
 /* fallback when backdrop-filter isn't supported: fully solid */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .legal{background:var(--bg)}
 }
-.legal a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--fg-dim);padding-bottom:1px}
-.legal a:hover{color:var(--fg);border-bottom-color:var(--fg)}
+.legal a{color:inherit;text-decoration:none;transition:color .15s}
+.legal a:hover{color:var(--fg)}
 .legal .sep{margin:0 8px;opacity:.6}
 /* leave room so the fixed bar never covers content */
 body{padding-bottom:calc(56px + env(safe-area-inset-bottom))}

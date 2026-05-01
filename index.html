@@ -350,8 +350,8 @@ footer{margin-top:32px;display:flex;justify-content:space-between;align-items:ce
 footer .priv{display:inline-flex;align-items:center;gap:8px}
 footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
 .legal{width:min(640px,calc(100vw - (var(--page-pad) * 2)));margin-top:14px;padding-top:14px;border-top:1px solid var(--line-2);text-align:center;font-family:var(--mono);font-size:9px;color:var(--fg-dim);letter-spacing:.14em;text-transform:uppercase;opacity:.7}
-.legal a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--fg-dim);padding-bottom:1px}
-.legal a:hover{color:var(--fg);border-bottom-color:var(--fg)}
+.legal a{color:inherit;text-decoration:none;transition:color .15s}
+.legal a:hover{color:var(--fg)}
 .legal .sep{margin:0 8px;opacity:.6}
 
 
@@ -407,9 +407,9 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   .legal{
     position:fixed;left:0;right:0;bottom:0;z-index:8500;
     width:auto;max-width:none;margin:0;
-    padding:7px var(--page-pad) 4px;
-    background:color-mix(in oklch, var(--bg) 60%, transparent);
-    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    padding:8px var(--page-pad) 8px;
+    background:color-mix(in oklch, var(--bg) 78%, transparent);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
     border-top:1px solid var(--line-2);
   }
   .wordmark{margin-bottom:20px;padding-right:52px}
@@ -883,9 +883,9 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 <div id="theme-panel" class="theme-panel">
   <div class="tp-lbl">Mode</div>
   <div class="tp-modes">
-    <button class="tp-mode" data-mode="auto"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg>Auto</button>
-    <button class="tp-mode" data-mode="light"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="1.6" y="1.6" width="8.4" height="8.4" rx="2.2"/><rect x="5.6" y="5.6" width="8.4" height="8.4" rx="2.2" fill="currentColor" stroke="none"/></svg>Light</button>
-    <button class="tp-mode" data-mode="dark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="1.6" y="1.6" width="8.4" height="8.4" rx="2.2" fill="currentColor" stroke="none"/><rect x="5.6" y="5.6" width="8.4" height="8.4" rx="2.2"/></svg>Dark</button>
+    <button class="tp-mode" data-mode="auto" data-icon="auto">Auto</button>
+    <button class="tp-mode" data-mode="light" data-icon="light">Light</button>
+    <button class="tp-mode" data-mode="dark" data-icon="dark">Dark</button>
   </div>
   <div class="tp-divider"></div>
   <div class="tp-lbl">Palette</div>
@@ -2108,14 +2108,25 @@ function applyTheme(){
   const vars=selected?paletteTheme(dark,selected):BASE_THEMES[dark?'dark':'light'];
   Object.entries(vars).forEach(([k,v])=>setThemeVar(k,v));
   syncThemeColor();
-  const ICONS={
-    auto:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg>`,
-    light:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.5 3.5l.7.7M11.8 11.8l.7.7M11.8 3.5l-.7.7M3.5 11.8l-.7.7"/></svg>`,
-    dark:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 10A6 6 0 016 4a6 6 0 000 8 6 6 0 006-2z"/></svg>`,
-  };
-  $('theme-btn').innerHTML=ICONS[tMode];
-  document.querySelectorAll('.tp-mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===tMode));
+  $('theme-btn').innerHTML=THEME_ICONS[tMode];
+  document.querySelectorAll('.tp-mode').forEach(b=>{
+    b.classList.toggle('active',b.dataset.mode===tMode);
+    const want=b.dataset.icon;
+    if(want && !b.querySelector('svg')){
+      b.insertAdjacentHTML('afterbegin',THEME_ICONS[want]);
+    }
+  });
 }
+/* Unified icon set: Auto = letter "A", Light = sun, Dark = moon.
+   Used by both the top-right theme button (where the icon reflects the
+   currently active mode) and the three buttons inside the theme panel
+   (where each button always shows its own fixed icon, regardless of
+   which mode/palette is currently active). */
+const THEME_ICONS={
+  auto:`<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><text x="8" y="12.4" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="12" font-weight="700" fill="currentColor">A</text></svg>`,
+  light:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.5 3.5l.7.7M11.8 11.8l.7.7M11.8 3.5l-.7.7M3.5 11.8l-.7.7"/></svg>`,
+  dark:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 10A6 6 0 016 4a6 6 0 000 8 6 6 0 006-2z"/></svg>`,
+};
 function buildPalette(){
   const grid=$('tp-palette');grid.innerHTML='';
   PALETTES.forEach(p=>{
