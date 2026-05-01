@@ -355,6 +355,12 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 .legal a:hover{color:var(--fg)}
 .legal .sep{margin:0 8px;opacity:.6}
 
+/* PWA standalone: hug the bottom edge harder than in Safari browser.
+   Same rule lives in privacy.html so both pages line up pixel-for-pixel. */
+@media (display-mode: standalone) and (max-width: 640px){
+  .legal{padding-top:6px;padding-bottom:2px}
+}
+
 
 /* ══ THEME SWITCHER ══ */
 .theme-btn{position:fixed;top:16px;right:20px;z-index:9000;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--bg-sub);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s;backdrop-filter:blur(8px)}
@@ -400,24 +406,20 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   body{align-items:stretch;padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(var(--legal-h) + env(safe-area-inset-bottom) + 14px)}
   .shell{width:auto;max-width:100%;min-width:0;margin:0 0 auto}
   /* pin SUB&SUB legal strip flush to the viewport bottom on mobile.
-     Note: in iOS PWA standalone, env(safe-area-inset-bottom) is ~34px
-     (home-indicator zone). We deliberately do NOT add it to the bottom
-     padding here, otherwise the text floats ~34px above the screen
-     edge in PWA mode while looking flush in Safari. The translucent
-     home-indicator bar sits over our background, which is fine. */
+     Mirror the privacy.html .legal styling 1:1 so the two pages look
+     identical in PWA. */
   .legal{
     position:fixed;left:0;right:0;bottom:0;z-index:8500;
     width:auto;max-width:none;margin:0;
-    padding:8px var(--page-pad) 8px;
+    padding:10px var(--page-pad) 8px;
     background:color-mix(in oklch, var(--bg) 55%, transparent);
-    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:saturate(140%) blur(8px);
+            backdrop-filter:saturate(140%) blur(8px);
     border-top:1px solid var(--line-2);
+    box-shadow:0 -4px 18px oklch(0 0 0 / .04);
   }
-  /* In PWA standalone (added to home screen) the safe-area inset already
-     reserves the home-indicator gap, so we want the text to sit MUCH lower
-     than in regular Safari (where the toolbar already provides bottom space). */
-  @media (display-mode: standalone){
-    .legal{padding-top:6px;padding-bottom:2px}
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .legal{background:var(--bg)}
   }
   .wordmark{margin-bottom:20px;padding-right:52px}
   .tabs-wrap{width:100%;max-width:100%;margin:0 0 22px;transform:none;overflow:hidden}
