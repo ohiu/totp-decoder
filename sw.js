@@ -1,7 +1,8 @@
-const CACHE_NAME = 'decoder-tools-v3';
+const CACHE_NAME = 'decoder-tools-v4';
 const CORE_ASSETS = [
   './',
   './index.html',
+  './privacy.html',
   './manifest.webmanifest',
   './icon.svg'
 ];
@@ -26,12 +27,14 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
   if (event.request.mode === 'navigate') {
+    const url = new URL(event.request.url);
+    const fallback = url.pathname.endsWith('/privacy.html') ? './privacy.html' : './index.html';
     event.respondWith(
       fetch(event.request).then(response => {
         const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+        caches.open(CACHE_NAME).then(cache => cache.put(fallback, copy));
         return response;
-      }).catch(() => caches.match('./index.html'))
+      }).catch(() => caches.match(fallback).then(r => r || caches.match('./index.html')))
     );
     return;
   }

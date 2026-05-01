@@ -350,8 +350,9 @@ footer{margin-top:32px;display:flex;justify-content:space-between;align-items:ce
 footer .priv{display:inline-flex;align-items:center;gap:8px}
 footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
 .legal{width:min(640px,calc(100vw - (var(--page-pad) * 2)));margin-top:14px;padding-top:14px;border-top:1px solid var(--line-2);text-align:center;font-family:var(--mono);font-size:9px;color:var(--fg-dim);letter-spacing:.14em;text-transform:uppercase;opacity:.7}
-.legal a{color:inherit;text-decoration:none}
-.legal a:hover{color:var(--fg)}
+.legal a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--fg-dim);padding-bottom:1px}
+.legal a:hover{color:var(--fg);border-bottom-color:var(--fg)}
+.legal .sep{margin:0 8px;opacity:.6}
 
 
 /* ══ THEME SWITCHER ══ */
@@ -393,11 +394,18 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 
 /* ══ NARROW SCREEN ══ */
 @media(max-width:640px){
-  :root{--page-pad:16px}
+  :root{--page-pad:16px;--legal-h:44px}
   html,body{min-height:100%;overflow-x:hidden}
-  body{align-items:stretch;padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(10px + env(safe-area-inset-bottom))}
+  body{align-items:stretch;padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(var(--legal-h) + env(safe-area-inset-bottom) + 14px)}
   .shell{width:auto;max-width:100%;min-width:0;margin:0 0 auto}
-  .legal{width:auto;max-width:none}
+  /* pin SUB&SUB legal strip to the visible viewport bottom on mobile */
+  .legal{
+    position:fixed;left:0;right:0;bottom:0;z-index:8500;
+    width:auto;max-width:none;margin:0;padding:10px var(--page-pad) calc(10px + env(safe-area-inset-bottom));
+    background:color-mix(in oklch, var(--bg) 78%, transparent);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    border-top:1px solid var(--line-2);
+  }
   .wordmark{margin-bottom:20px;padding-right:52px}
   .tabs-wrap{width:100%;max-width:100%;margin:0 0 22px;transform:none;overflow:hidden}
   .tabs{width:100%;max-width:100%}
@@ -862,7 +870,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   <span id="footer-ref">RFC 4648</span>
 </footer>
 </main>
-<div class="legal">&copy; 2026 SUB&amp;SUB LLC &middot; All rights reserved</div>
+<div class="legal">&copy; 2026 SUB&amp;SUB LLC &middot; All rights reserved<span class="sep">·</span><a href="privacy.html">Privacy Policy</a></div>
 
 <!-- ══ THEME TOGGLE ══ -->
 <button id="theme-btn" class="theme-btn" aria-label="Color theme"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg></button>
