@@ -1,10 +1,17 @@
-const CACHE_NAME = 'decoder-tools-v9';
+const CACHE_NAME = 'decoder-tools-v10';
 const CORE_ASSETS = [
   './',
   './index.html',
   './privacy.html',
   './manifest.webmanifest',
-  './icon.svg'
+  './icon.svg',
+  './icon-maskable.svg',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-192.png',
+  './icon-maskable-512.png',
+  './apple-touch-icon.png',
+  './favicon-32.png'
 ];
 
 self.addEventListener('install', event => {
