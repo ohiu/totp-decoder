@@ -90,10 +90,13 @@ code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px
   border-top:1px solid var(--line-2);
   box-shadow:0 -4px 18px oklch(0 0 0 / .04);
 }
-/* PWA standalone: hug the bottom edge harder than in Safari browser.
-   Identical rule lives in index.html so both pages line up pixel-for-pixel. */
-@media (display-mode: standalone) and (max-width: 640px){
-  .legal{padding-top:6px;padding-bottom:2px}
+/* PWA standalone has too many WebKit quirks (no reliable backdrop-filter,
+   safe-area math drifts, etc.) — just hide the legal bar entirely when
+   the page is launched as an installed app. Body bottom padding is also
+   reclaimed below. Same rule lives in index.html. */
+@media (display-mode: standalone){
+  .legal{display:none !important}
+  body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px) !important}
 }
 /* fallback when backdrop-filter isn't supported: fully solid */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){

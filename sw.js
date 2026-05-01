@@ -1,4 +1,4 @@
-const CACHE_NAME = 'decoder-tools-v12';
+const CACHE_NAME = 'decoder-tools-v13';
 const CORE_ASSETS = [
   './',
   './index.html',

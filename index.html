@@ -355,10 +355,12 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 .legal a:hover{color:var(--fg)}
 .legal .sep{margin:0 8px;opacity:.6}
 
-/* PWA standalone: hug the bottom edge harder than in Safari browser.
-   Same rule lives in privacy.html so both pages line up pixel-for-pixel. */
-@media (display-mode: standalone) and (max-width: 640px){
-  .legal{padding-top:6px;padding-bottom:2px}
+/* PWA standalone has too many WebKit quirks (no reliable backdrop-filter,
+   safe-area math drifts, etc.) — just hide the legal bar entirely when
+   the page is launched as an installed app. The same rule lives in
+   privacy.html so behavior is identical on both pages. */
+@media (display-mode: standalone){
+  .legal{display:none !important}
 }
 
 
@@ -404,6 +406,11 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   :root{--page-pad:16px;--legal-h:44px}
   html,body{min-height:100%;overflow-x:hidden}
   body{align-items:stretch;padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(var(--legal-h) + env(safe-area-inset-bottom) + 14px)}
+  /* In PWA standalone the .legal bar is hidden, so reclaim the space
+     the body was reserving for it. */
+  @media (display-mode: standalone){
+    body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px)}
+  }
   .shell{width:auto;max-width:100%;min-width:0;margin:0 0 auto}
   /* pin SUB&SUB legal strip flush to the viewport bottom on mobile.
      Mirror the privacy.html .legal styling 1:1 so the two pages look
