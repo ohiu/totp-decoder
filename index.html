@@ -401,7 +401,8 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   /* pin SUB&SUB legal strip to the visible viewport bottom on mobile */
   .legal{
     position:fixed;left:0;right:0;bottom:0;z-index:8500;
-    width:auto;max-width:none;margin:0;padding:10px var(--page-pad) calc(10px + env(safe-area-inset-bottom));
+    width:auto;max-width:none;margin:0;
+    padding:8px var(--page-pad) max(env(safe-area-inset-bottom), 8px);
     background:color-mix(in oklch, var(--bg) 78%, transparent);
     -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
     border-top:1px solid var(--line-2);

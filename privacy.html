@@ -68,7 +68,9 @@ code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px
 .legal{
   position:fixed;left:0;right:0;bottom:0;z-index:8500;
   width:auto;max-width:none;margin:0;
-  padding:12px var(--page-pad) calc(12px + env(safe-area-inset-bottom));
+  /* hug the bottom: in PWA the safe-area is already the home-indicator gap,
+     so we add no extra space below it */
+  padding:10px var(--page-pad) max(env(safe-area-inset-bottom), 8px);
   text-align:center;font-family:var(--mono);font-size:10px;
   color:var(--fg-mid);letter-spacing:.14em;text-transform:uppercase;
   background:color-mix(in oklch, var(--bg) 92%, transparent);
