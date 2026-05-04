@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>About — How to Use the Developer Tools</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="application-name" content="SUB&amp;SUB Tools">
+<meta name="apple-mobile-web-app-title" content="Tools">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f8faf7">
+<meta name="description" content="What every tool on SUB&amp;SUB Tools does, when to reach for it, and how it works under the hood. Local-first, no tracking, no servers.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://tool.subnsub.com/about.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SUB&amp;SUB Tools">
+<meta property="og:title" content="About — How to Use the Developer Tools">
+<meta property="og:description" content="What each of the 15 developer tools does and when to reach for it.">
+<meta property="og:url" content="https://tool.subnsub.com/about.html">
+<meta property="og:image" content="https://tool.subnsub.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="About — How to Use the Developer Tools">
+<meta name="twitter:description" content="What each of the 15 developer tools does and when to reach for it.">
+<meta name="twitter:image" content="https://tool.subnsub.com/icon-512.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
+<link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url('fonts/inter-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url('fonts/jetbrains-mono-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{
+  --page-pad:20px;
+  --bg:        oklch(0.985 0.003 85);
+  --bg-sub:    oklch(0.965 0.004 85);
+  --surface:   oklch(1 0 0);
+  --line:      oklch(0.90 0.005 85);
+  --line-2:    oklch(0.94 0.004 85);
+  --line-hover:oklch(0.82 0.007 85);
+  --fg:        oklch(0.18 0.01 85);
+  --fg-mid:    oklch(0.45 0.008 85);
+  --fg-dim:    oklch(0.62 0.006 85);
+  --accent:    oklch(0.62 0.13 145);
+  --accent-bg: oklch(0.96 0.03 145);
+  --accent-halo:oklch(0.62 0.13 145 / .18);
+  --page-glow: oklch(0.96 0.02 145 / .55);
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:oklch(0.145 0.014 85);--bg-sub:oklch(0.20 0.016 85);--surface:oklch(0.245 0.016 85);
+    --line:oklch(0.36 0.016 85);--line-2:oklch(0.29 0.014 85);--line-hover:oklch(0.50 0.018 85);
+    --fg:oklch(0.95 0.006 85);--fg-mid:oklch(0.76 0.010 85);--fg-dim:oklch(0.62 0.010 85);
+    --page-glow: oklch(0.30 0.04 145 / .35);
+  }
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:var(--sans);color:var(--fg);
+  background:radial-gradient(ellipse 80% 50% at 50% -5%,var(--page-glow),transparent 60%),var(--bg);
+  -webkit-font-smoothing:antialiased;
+  min-height:100dvh;padding:32px var(--page-pad);
+  display:flex;flex-direction:column;align-items:center;
+  line-height:1.6;
+}
+.shell{width:min(720px,calc(100vw - (var(--page-pad) * 2)));margin:clamp(48px,10vh,96px) 0 auto}
+.wordmark{display:flex;align-items:center;gap:9px;margin-bottom:24px}
+.wordmark .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-halo)}
+.wordmark .name{font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--fg-mid)}
+.back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-dim);text-decoration:none;margin-bottom:18px;padding:6px 11px;border:1px solid var(--line);border-radius:9px;background:var(--bg-sub);transition:color .15s,border-color .15s}
+.back:hover{color:var(--fg);border-color:var(--line-hover)}
+h1{font-size:26px;font-weight:600;letter-spacing:-0.02em;margin:0 0 6px}
+.lead{font-size:13px;color:var(--fg-mid);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin:0 0 28px}
+h2{font-size:16px;font-weight:600;letter-spacing:-0.01em;margin:28px 0 8px;display:flex;align-items:center;gap:10px}
+h2::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-halo);flex-shrink:0}
+p,li{font-size:14.5px;color:var(--fg);margin:8px 0}
+ul{padding-left:20px;margin:8px 0 8px}
+li{margin:6px 0}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s}
+a:hover{border-bottom-color:var(--accent)}
+code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px solid var(--line-2);padding:1px 6px;border-radius:5px}
+.callout{background:var(--bg-sub);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:14px 16px;margin:18px 0;font-size:13.5px;color:var(--fg-mid);line-height:1.55}
+/* frosted-glass legal bar pinned to viewport bottom on every screen — same
+   visual treatment as index.html and privacy.html so the three pages match. */
+.legal{
+  position:fixed;left:0;right:0;bottom:0;z-index:8500;
+  width:auto;max-width:none;margin:0;
+  padding:10px var(--page-pad) 8px;
+  text-align:center;font-family:var(--mono);font-size:10px;
+  color:var(--fg-mid);letter-spacing:.14em;text-transform:uppercase;
+  background:color-mix(in oklch, var(--bg) 55%, transparent);
+  -webkit-backdrop-filter:saturate(140%) blur(8px);
+          backdrop-filter:saturate(140%) blur(8px);
+  border-top:1px solid var(--line-2);
+  box-shadow:0 -4px 18px oklch(0 0 0 / .04);
+}
+@media (display-mode: standalone){
+  .legal{display:none !important}
+  body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px) !important}
+}
+/* Domain-gated legal bar: only the canonical production hostname shows
+   the strip. Set by the early <head> script via <html data-legal>. */
+html[data-legal="off"] .legal{display:none !important}
+html[data-legal="off"] body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px) !important}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .legal{background:var(--bg)}
+}
+.legal a{color:inherit;text-decoration:none;transition:color .15s}
+.legal a:hover{color:var(--fg)}
+.legal .sep{margin:0 8px;opacity:.6}
+body{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+@media(max-width:640px){
+  :root{--page-pad:16px}
+  body{padding-top:calc(18px + env(safe-area-inset-top));padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+  .shell{width:auto;max-width:100%;margin:0 0 auto}
+  h1{font-size:22px}
+  p,li{font-size:15px}
+}
+</style>
+<!-- Resolve the legal-bar gate before first paint so non-canonical
+     domains never flash the strip. Mirrors the same gate in index.html
+     and privacy.html. -->
+<script>
+document.documentElement.setAttribute('data-legal',
+  location.hostname.toLowerCase()==='tool.subnsub.com'?'on':'off');
+</script>
+</head>
+<body>
+<main class="shell">
+  <div class="wordmark"><span class="dot"></span><span class="name">SUB&amp;SUB · Tools</span></div>
+  <a class="back" href="index.html">← Back to Tools</a>
+
+  <h1>About these tools</h1>
+  <p class="lead">What each one does and when to reach for it</p>
+
+  <div class="callout">
+    SUB&amp;SUB Tools is a no-fluff utility belt for the kind of thing developers,
+    operators, and security folk reach for several times a day: decoding tokens
+    that came back from an API, generating a quick UUID, double-checking a regex,
+    hashing a file you just downloaded. Everything happens entirely in your browser
+    using native Web Crypto and the standard DOM APIs &mdash; nothing you paste, type, or
+    drop ever leaves your device.
+  </div>
+
+  <h2>Base64</h2>
+  <p>
+    Encode plain text into Base64 (RFC 4648) or decode it back. Decode is the default
+    direction because it is by far the more common one in day-to-day work. You will
+    reach for Base64 decoding when you are inspecting a <code>data:</code> URL,
+    picking apart a JWT segment that arrived in your <code>Authorization</code>
+    header, reading a token someone pasted in Slack, or unpacking a secret that ended
+    up in an environment variable. Encoding is what you do when you need to embed
+    binary-safe text inside a URL or JSON field. Both directions handle Unicode
+    (UTF-8) correctly.
+  </p>
+
+  <h2>TOTP &mdash; One-Time Password Generator</h2>
+  <p>
+    Generate the same six-digit code an authenticator app would show, given a
+    Base32-encoded shared secret. This is the standard implemented by Google
+    Authenticator, Authy, 1Password, and most 2FA setups (RFC 6238 with HMAC-SHA1,
+    30-second windows). Useful when you are setting up 2FA on a server and want to
+    verify the secret was stored correctly before finalizing the configuration,
+    debugging an OTP-based automation, or recovering when an authenticator app is
+    unavailable. The previous and next 30-second windows are also displayed in case
+    the verifying server's clock has drifted slightly.
+  </p>
+
+  <h2>QR Code Generator</h2>
+  <p>
+    Render any text or URL as a QR code following ISO/IEC 18004. The most common
+    practical use here is converting an <code>otpauth://</code> URI into a scannable
+    code so you can hand it to a phone-based authenticator, but it works for any
+    short text &mdash; Wi-Fi credentials, a contact card, a one-off URL. Pick error
+    correction level L / M / Q / H &mdash; higher levels survive smudges and folds but
+    produce denser codes. Download the result as a vector SVG (sharp at any size) or
+    a PNG.
+  </p>
+
+  <h2>URL Encoder / Decoder</h2>
+  <p>
+    Percent-encode and decode URL components per RFC 3986. Decode is the default
+    because the more common scenario is &ldquo;I see this encoded URL in a log and
+    need to read it&rdquo;. Two scopes are available: <strong>Component</strong>
+    treats your input as a single value and encodes everything that is not
+    alphanumeric &mdash; the strict mode for query parameter values; <strong>Full
+    URL</strong> preserves URL structure characters (<code>:/?#[]</code>) so a
+    complete URL stays clickable. Use Component when handling query string values or
+    path segments individually, Full URL when working with whole URLs.
+  </p>
+
+  <h2>JSON Formatter</h2>
+  <p>
+    Validate, pretty-print, or minify JSON (ECMA-404). On invalid input, the exact
+    line and column of the syntax error are highlighted so you can jump straight to
+    the broken character. The pretty-printer supports 2-space, 4-space, and tab
+    indentation. Useful when you have just received an unformatted blob from an API,
+    need to inspect a deeply nested response, or want to minify before embedding in
+    a build artifact.
+  </p>
+
+  <h2>JWT Decoder</h2>
+  <p>
+    Decode and inspect JSON Web Tokens (RFC 7519). The token is split into its
+    three Base64-encoded parts (header, payload, signature) and the JSON content of
+    each is pretty-printed. The expiry status is shown if the payload includes
+    <code>exp</code>. Note that signature verification is <strong>not</strong>
+    performed &mdash; that requires the issuer's public key and is out of scope for a
+    quick-inspection tool. Useful when you are debugging auth flows, want to see what
+    claims your tokens carry, or need to confirm a token has not expired.
+  </p>
+
+  <h2>Hash</h2>
+  <p>
+    Compute cryptographic hashes (FIPS 180-4): SHA-1, SHA-256, SHA-384, and SHA-512.
+    Drop a file or paste text; the digest is computed locally using
+    <code>crypto.subtle.digest</code> &mdash; the browser's native Web Crypto
+    implementation. Useful for verifying a downloaded file matches its published
+    checksum, generating fingerprints for content-addressed storage, or quick
+    integrity checks before processing a payload further.
+  </p>
+
+  <h2>Hex</h2>
+  <p>
+    Convert between text and hex byte sequences. Decode is the default &mdash; paste hex
+    (with or without separators between bytes) and read it back as text. Useful when
+    reading hex dumps, debugging binary protocols, or working with low-level encoding
+    where you have the raw bytes but not yet a readable form. The separator option
+    lets you switch between space-separated, colon-separated, and continuous output
+    when encoding.
+  </p>
+
+  <h2>HTML Entities</h2>
+  <p>
+    Encode and decode HTML entities. Decode is the default &mdash; paste markup littered
+    with <code>&amp;lt;</code>, <code>&amp;amp;</code>, <code>&amp;quot;</code>, etc.
+    and read the original characters. Encode mode produces HTML-safe output suitable
+    for embedding user-supplied text into a page. The reference grid below the input
+    shows common entities you can copy individually if you only need one or two.
+  </p>
+
+  <h2>Regex Tester</h2>
+  <p>
+    Test JavaScript-flavored regular expressions (ECMA-262). Type a pattern, toggle
+    flags (<code>g</code> global, <code>i</code> case-insensitive, <code>m</code>
+    multiline, <code>s</code> dot-all), and watch matches highlight in your test
+    text in real time. Capture groups are color-coded; the full match list and group
+    contents are shown below. Useful for prototyping a pattern before pasting it
+    into code, debugging why a regex is not matching what you expected, or learning
+    regex syntax interactively.
+  </p>
+
+  <h2>Diff</h2>
+  <p>
+    Compare two pieces of text and see the line-by-line differences with additions
+    in green and deletions in red. Useful for spotting changes between two
+    configurations, two API responses, two log excerpts &mdash; anything you need to
+    compare side by side. The summary line shows totals so you know at a glance how
+    many lines were added and removed.
+  </p>
+
+  <h2>Color</h2>
+  <p>
+    Paste a color as HEX, <code>rgb()</code>, or <code>hsl()</code> and see all four
+    standard CSS forms side by side &mdash; HEX, RGB, HSL, and the
+    perceptually-uniform OKLCH (CSS Color Module Level 4). The OKLCH form is shown
+    as output only and is handy when generating theme palettes or when you want a
+    color whose lightness reads consistently to the eye regardless of hue.
+  </p>
+
+  <h2>UUID Generator</h2>
+  <p>
+    Generate cryptographically random UUIDs (RFC 4122 v4) &mdash; the standard 128-bit
+    identifier used in databases, distributed systems, queue IDs, and APIs. Random
+    bytes come from <code>crypto.getRandomValues</code>. Below the generator, a
+    validator tells you whether a pasted UUID is well-formed and which RFC 4122
+    version it claims to be (v1 through v5).
+  </p>
+
+  <h2>Password Generator</h2>
+  <p>
+    Generate cryptographically random passwords aligned with NIST SP 800-63B
+    guidance. Pick a length and which character classes to include (lowercase,
+    uppercase, digits, symbols); a live entropy estimate updates as you adjust the
+    settings. The random source is <code>crypto.getRandomValues</code>, the same
+    cryptographically secure RNG modern browsers use for TLS-related operations.
+    Useful when you need a fresh strong password for an account or service and do
+    not want to fall back to whatever your password manager offers by default.
+  </p>
+
+  <h2>Unix Time</h2>
+  <p>
+    Convert Unix timestamps (POSIX.1 &mdash; seconds since 1970-01-01 UTC) into readable
+    dates and back. The live timestamp at the top is your device's current time
+    (<code>Date.now()</code>); no clock service is consulted. Pick a date in the
+    second column to see its timestamp, or paste a timestamp in the first column to
+    see the date in UTC, your local time, and a human-relative form
+    (&ldquo;2 hours ago&rdquo;). Useful when reading log files, debugging
+    time-related code, or just figuring out what <code>1714363200</code> actually
+    means.
+  </p>
+
+  <h2>How it all works</h2>
+  <p>
+    Every operation runs locally in your browser. Hashes, HMAC, random number
+    generation, base encoding, regex matching, font rendering &mdash; all of it. The site
+    loads no third-party scripts, no analytics, no advertising frames. The only
+    network requests after the initial page load are for the static assets
+    themselves (HTML, CSS, JS, fonts, icons), and only on first visit &mdash; afterwards a
+    Service Worker serves them offline.
+  </p>
+  <p>
+    Nothing you paste, type, or drop is sent anywhere or stored anywhere outside
+    your browser tab. The only persistent state is a few user preferences (theme,
+    palette, animation toggle) saved to <code>localStorage</code>. See the
+    <a href="privacy.html">Privacy Policy</a> for the full version.
+  </p>
+</main>
+
+<div class="legal">&copy; 2026 SUB&amp;SUB LLC<span class="sep">&middot;</span><a href="index.html">Tools</a><span class="sep">&middot;</span><a href="privacy.html">Privacy Policy</a></div>
+</body>
+</html>

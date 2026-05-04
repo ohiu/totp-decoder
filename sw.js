@@ -1,8 +1,9 @@
-const CACHE_NAME = 'decoder-tools-v14';
+const CACHE_NAME = 'decoder-tools-v15';
 const CORE_ASSETS = [
   './',
   './index.html',
   './privacy.html',
+  './about.html',
   './manifest.webmanifest',
   './icon.svg',
   './icon-maskable.svg',
@@ -37,7 +38,9 @@ self.addEventListener('fetch', event => {
 
   if (event.request.mode === 'navigate') {
     const url = new URL(event.request.url);
-    const fallback = url.pathname.endsWith('/privacy.html') ? './privacy.html' : './index.html';
+    const fallback = url.pathname.endsWith('/privacy.html') ? './privacy.html'
+                   : url.pathname.endsWith('/about.html')   ? './about.html'
+                   : './index.html';
     event.respondWith(
       fetch(event.request).then(response => {
         const copy = response.clone();
