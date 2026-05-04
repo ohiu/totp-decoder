@@ -428,10 +428,11 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   .legal{display:none !important}
 }
 
-/* Domain-gated legal bar: only the canonical production hostname shows
-   the © + Privacy Policy strip. Set by the early <head> script via
-   <html data-legal>. */
-html[data-legal="off"] .legal{display:none !important}
+/* Domain-gated copyright: the © SUB&SUB LLC text only shows on the
+   primary brand domain. Other-domain visitors still see the About /
+   Privacy links so they can reach those pages. Set by the early
+   <head> script via <html data-legal>. */
+html[data-legal="off"] .legal-brand{display:none}
 
 
 /* ══ THEME SWITCHER ══ */
@@ -491,13 +492,11 @@ html[data-legal="off"] .legal{display:none !important}
   :root{--page-pad:16px;--legal-h:44px}
   html,body{min-height:100%;overflow-x:hidden}
   body{align-items:stretch;padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(var(--legal-h) + env(safe-area-inset-bottom) + 14px)}
-  /* When the .legal bar is hidden — either because we're in PWA standalone
-     mode, or because we're on a non-canonical domain (data-legal="off") —
-     reclaim the bottom space the body was reserving for it. */
+  /* In PWA standalone the legal bar is hidden entirely, so reclaim
+     the bottom space the body was reserving for it. */
   @media (display-mode: standalone){
     body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px)}
   }
-  html[data-legal="off"] body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px)}
   .shell{width:auto;max-width:100%;min-width:0;margin:0 0 auto}
   /* pin legal strip flush to the viewport bottom on mobile.
      Mirror the privacy.html .legal styling 1:1 so the two pages look
@@ -1057,7 +1056,7 @@ html[data-anim="off"] .tab-indicator.live{transition:none!important}
   <span id="footer-ref">RFC 4648</span>
 </footer>
 </main>
-<div class="legal">&copy; 2026 SUB&amp;SUB LLC<span class="sep">·</span><a href="about.html">About</a><span class="sep">·</span><a href="privacy.html">Privacy Policy</a></div>
+<div class="legal"><span class="legal-brand">&copy; 2026 SUB&amp;SUB LLC<span class="sep">·</span></span><a href="about.html">About</a><span class="sep">·</span><a href="privacy.html">Privacy Policy</a></div>
 
 <!-- ══ THEME TOGGLE ══ -->
 <button id="theme-btn" class="theme-btn" aria-label="Color theme"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg></button>

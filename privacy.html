@@ -112,10 +112,11 @@ code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px
   .legal{display:none !important}
   body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px) !important}
 }
-/* Domain-gated legal bar: only the canonical production hostname shows
-   the strip. Set by the early <head> script via <html data-legal>. */
-html[data-legal="off"] .legal{display:none !important}
-html[data-legal="off"] body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px) !important}
+/* Domain-gated copyright: the © SUB&SUB LLC text only shows on the
+   primary brand domain. Other-domain visitors still see the About /
+   Privacy links so they can reach those pages. Set by the early
+   <head> script via <html data-legal>. */
+html[data-legal="off"] .legal-brand{display:none}
 /* Domain-gated controller identity in the privacy body: visitors on the
    primary brand domain see the full legal entity name (GDPR/CCPA-grade),
    other-domain visitors see the de-branded form. Same gate as .legal,
@@ -237,6 +238,6 @@ document.documentElement.setAttribute('data-legal',
   </p>
 </main>
 
-<div class="legal">&copy; 2026 SUB&amp;SUB LLC<span class="sep">&middot;</span><a href="about.html">About</a><span class="sep">&middot;</span><a href="index.html">Tools</a></div>
+<div class="legal"><span class="legal-brand">&copy; 2026 SUB&amp;SUB LLC<span class="sep">&middot;</span></span><a href="about.html">About</a><span class="sep">&middot;</span><a href="index.html">Tools</a></div>
 </body>
 </html>
