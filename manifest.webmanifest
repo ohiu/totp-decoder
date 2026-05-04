@@ -1,5 +1,5 @@
 {
-  "name": "SUB&SUB Tools",
+  "name": "Online Developer Tools",
   "short_name": "Tools",
   "description": "Local-first developer tools: encoders, decoders, generators, formatters, hashes, regex, diff, color, UUID, password, QR, Unix time, and more.",
   "start_url": "./index.html",

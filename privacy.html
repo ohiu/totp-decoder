@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8">
 <title>Privacy Policy — Local-First Developer Tools</title>
-<meta name="description" content="How SUB&amp;SUB Tools handles your data: short version is we don't. Everything runs locally in your browser, no analytics, no tracking, no servers.">
+<meta name="description" content="How this site handles your data: short version is we don't. Everything runs locally in your browser, no analytics, no tracking, no servers.">
 <meta name="robots" content="index,follow">
-<link rel="canonical" href="https://tool.subnsub.com/privacy.html">
+<link rel="canonical" href="https://www.200000.live/privacy.html">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="SUB&amp;SUB Tools">
+<meta property="og:site_name" content="Online Developer Tools">
 <meta property="og:title" content="Privacy Policy — Local-First Developer Tools">
 <meta property="og:description" content="How we handle your data: short version is we don't. Everything runs locally in your browser.">
-<meta property="og:url" content="https://tool.subnsub.com/privacy.html">
-<meta property="og:image" content="https://tool.subnsub.com/icon-512.png">
+<meta property="og:url" content="https://www.200000.live/privacy.html">
+<meta property="og:image" content="https://www.200000.live/icon-512.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Privacy Policy — Local-First Developer Tools">
 <meta name="twitter:description" content="No analytics, no tracking, no servers — everything runs in your browser.">
-<meta name="twitter:image" content="https://tool.subnsub.com/icon-512.png">
+<meta name="twitter:image" content="https://www.200000.live/icon-512.png">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="application-name" content="SUB&amp;SUB Tools">
+<meta name="application-name" content="Online Developer Tools">
 <meta name="apple-mobile-web-app-title" content="Tools">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -116,6 +116,12 @@ code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px
    the strip. Set by the early <head> script via <html data-legal>. */
 html[data-legal="off"] .legal{display:none !important}
 html[data-legal="off"] body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px) !important}
+/* Domain-gated controller identity in the privacy body: visitors on the
+   primary brand domain see the full legal entity name (GDPR/CCPA-grade),
+   other-domain visitors see the de-branded form. Same gate as .legal,
+   no separate hostname check. */
+html[data-legal="on"]  .brand-soft{display:none}
+html[data-legal="off"] .brand-strict{display:none}
 /* fallback when backdrop-filter isn't supported: fully solid */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .legal{background:var(--bg)}
@@ -142,7 +148,7 @@ document.documentElement.setAttribute('data-legal',
 </head>
 <body>
 <main class="shell">
-  <div class="wordmark"><span class="dot"></span><span class="name">SUB&amp;SUB · Tools</span></div>
+  <div class="wordmark"><span class="dot"></span><span class="name">Tools</span></div>
   <a class="back" href="index.html">← Back to Tools</a>
 
   <h1>Privacy Policy</h1>
@@ -155,9 +161,9 @@ document.documentElement.setAttribute('data-legal',
 
   <h2>1. Who we are</h2>
   <p>
-    SUB&amp;SUB Tools (the “Service”) is a free, browser-based developer toolkit
-    operated by SUB&amp;SUB LLC (“we”, “us”, “our”). For privacy questions you can
-    reach us at <a href="mailto:privacy@subnsub.com">privacy@subnsub.com</a>.
+    This site (the “Service”) is a free, browser-based developer toolkit
+    operated by <span class="brand-strict">SUB&amp;SUB LLC</span><span class="brand-soft">the site owner</span> (“we”, “us”, “our”). For privacy questions you can
+    reach us at <a href="mailto:privacy@200000.live">privacy@200000.live</a>.
   </p>
 
   <h2>2. Local-only processing</h2>
@@ -227,7 +233,7 @@ document.documentElement.setAttribute('data-legal',
   <h2>9. Contact</h2>
   <p>
     Questions, requests, or concerns about this policy can be sent to
-    <a href="mailto:privacy@subnsub.com">privacy@subnsub.com</a>.
+    <a href="mailto:privacy@200000.live">privacy@200000.live</a>.
   </p>
 </main>
 

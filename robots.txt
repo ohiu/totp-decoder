@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tool.subnsub.com/sitemap.xml
+Sitemap: https://www.200000.live/sitemap.xml
