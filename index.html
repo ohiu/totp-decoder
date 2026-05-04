@@ -14,10 +14,31 @@
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Self-hosted variable fonts (latin subset). Preload so they fetch in
+     parallel with the HTML parse — visual layout doesn't get blocked
+     by the @font-face rules in the inline <style>. -->
+<link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+/* Inter and JetBrains Mono — self-hosted as variable fonts (latin subset).
+   One file per family covers every weight we use; the font-weight range
+   tells the browser to interpolate the variable axis as needed. */
+@font-face{
+  font-family:'Inter';
+  font-style:normal;
+  font-weight:400 600;
+  font-display:swap;
+  src:url('fonts/inter-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'JetBrains Mono';
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+  src:url('fonts/jetbrains-mono-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
 :root {
   --page-pad: 20px;
   --bg:        oklch(0.985 0.003 85);
@@ -75,14 +96,14 @@ body{
 
 /* ── tab bar ── */
 .tabs-wrap{position:relative;margin:0 0 24px 50%;width:max-content;max-width:calc(100vw - (var(--page-pad) * 2));min-width:0;transform:translateX(-50%)}
-.tabs{display:flex;gap:2px;width:max-content;max-width:100%;min-width:0;background:var(--bg-sub);border:1px solid var(--line);border-radius:12px;padding:4px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none}
+.tabs{display:flex;gap:2px;width:max-content;max-width:100%;min-width:0;background:var(--bg-sub);border:1px solid var(--line);border-radius:14px;padding:4px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tabs-wrap::before,.tabs-wrap::after{content:"";position:absolute;top:1px;bottom:1px;width:24px;pointer-events:none;border-radius:12px;opacity:0;transition:opacity .15s;z-index:1}
+.tabs-wrap::before,.tabs-wrap::after{content:"";position:absolute;top:1px;bottom:1px;width:24px;pointer-events:none;border-radius:14px;opacity:0;transition:opacity .15s;z-index:1}
 .tabs-wrap::before{left:1px;background:linear-gradient(to right,var(--bg-sub),transparent)}
 .tabs-wrap::after{right:1px;background:linear-gradient(to left,var(--bg-sub),transparent)}
 .tabs-wrap.fade-l::before{opacity:1}
 .tabs-wrap.fade-r::after{opacity:1}
-.tab{flex:0 0 auto;font-family:var(--mono);font-size:10.5px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--fg-dim);background:transparent;border:0;border-radius:8px;padding:7px 13px;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
+.tab{flex:0 0 auto;font-family:var(--mono);font-size:10.5px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--fg-dim);background:transparent;border:0;border-radius:10px;padding:7px 13px;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
 .tab:hover{color:var(--fg-mid);background:var(--hover)}
 .tab.active{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px oklch(0 0 0/.07),0 0 0 1px oklch(0 0 0/.04)}
 
@@ -102,7 +123,7 @@ body{
 .input-wrap{position:relative}
 input.fi,textarea.fi{
   width:100%;font-family:var(--mono);font-size:13px;font-weight:500;color:var(--fg);
-  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
   padding:11px 36px 11px 13px;outline:none;transition:border-color .15s,box-shadow .15s;
   resize:none;line-height:1.5;
 }
@@ -111,7 +132,7 @@ input.fi::placeholder,textarea.fi::placeholder{color:var(--fg-dim);font-weight:4
 input.fi:focus,textarea.fi:focus{border-color:var(--accent-focus);box-shadow:0 0 0 4px var(--accent-ring)}
 input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0 4px var(--danger-ring)}
 
-.fi-clear{position:absolute;right:8px;top:8px;width:22px;height:22px;border-radius:5px;border:0;background:transparent;color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;opacity:0;transition:opacity .15s,background .15s}
+.fi-clear{position:absolute;right:8px;top:8px;width:22px;height:22px;border-radius:7px;border:0;background:transparent;color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;opacity:0;transition:opacity .15s,background .15s}
 .fi-clear.show{opacity:1}
 .fi-clear:hover{background:var(--bg-sub);color:var(--fg)}
 .fi-clear svg{width:11px;height:11px}
@@ -121,18 +142,18 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 
 /* ── toggle row ── */
 .toggle-row{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
-.tog{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.07em;font-weight:500;color:var(--fg-dim);background:var(--bg-sub);border:1px solid var(--line);border-radius:7px;padding:5px 11px;cursor:pointer;transition:all .15s}
+.tog{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.07em;font-weight:500;color:var(--fg-dim);background:var(--bg-sub);border:1px solid var(--line);border-radius:9px;padding:5px 11px;cursor:pointer;transition:all .15s}
 .tog.active{background:var(--accent);color:var(--on-accent);border-color:transparent}
 .tog:hover:not(.active){color:var(--fg)}
 
 /* ── swap row ── */
 .swap-row{display:flex;justify-content:flex-end;margin:-8px 0 10px}
-.swap-btn{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--fg-dim);background:var(--bg-sub);border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.swap-btn{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--fg-dim);background:var(--bg-sub);border:1px solid var(--line);border-radius:8px;padding:4px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
 .swap-btn:hover{color:var(--fg);border-color:var(--line-hover)}
 .swap-btn svg{width:11px;height:11px}
 
 /* ── output box ── */
-.out-box{position:relative;background:var(--bg-sub);border:1px solid var(--line);border-radius:10px;padding:12px 110px 12px 13px;min-height:46px}
+.out-box{position:relative;background:var(--bg-sub);border:1px solid var(--line);border-radius:12px;padding:12px 110px 12px 13px;min-height:46px}
 .out-val{font-family:var(--mono);font-size:12.5px;color:var(--fg);line-height:1.65;white-space:pre-wrap;word-break:break-all}
 .out-val.empty{color:var(--fg-dim);font-weight:400;white-space:normal}
 .out-meta{font-family:var(--mono);font-size:10px;color:var(--fg-dim);margin-top:6px;letter-spacing:0.04em}
@@ -159,7 +180,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .json-out .copy-btn,.jwt-body .copy-btn,.hash-val .copy-btn,.qr-stage .copy-btn{top:13px;transform:none}
 
 /* ── strip ── */
-.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .strip .cell{background:var(--bg-sub);padding:10px 12px}
 .strip .sk{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--fg-dim);margin-bottom:3px}
 .strip .sv{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--fg);font-variant-numeric:tabular-nums;word-break:break-all;line-height:1.3}
@@ -168,7 +189,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .strip-4{grid-template-columns:repeat(4,1fr)}
 
 /* ── TOTP ── */
-.code-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 22px 0;overflow:hidden;transition:border-color .2s;margin-bottom:14px}
+.code-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px 22px 0;overflow:hidden;transition:border-color .2s;margin-bottom:14px}
 .code-card.empty{background:var(--bg-sub);border-style:dashed}
 .cmeta{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.09em;color:var(--fg-dim);margin-bottom:10px}
 .cmeta .live{display:inline-flex;align-items:center;gap:6px}
@@ -176,7 +197,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .code-card.empty .cmeta .pulse{background:var(--fg-dim);animation:none}
 @keyframes blink{0%,100%{opacity:.4;transform:scale(.9)}50%{opacity:1;transform:scale(1.1)}}
 .neighbors{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:2px 0 4px}
-.neighbor{display:flex;flex-direction:column;gap:3px;padding:5px 6px;border-radius:8px;cursor:pointer;user-select:none;-webkit-user-select:none;transition:background .15s}
+.neighbor{display:flex;flex-direction:column;gap:3px;padding:5px 6px;border-radius:10px;cursor:pointer;user-select:none;-webkit-user-select:none;transition:background .15s}
 .neighbor.right{align-items:flex-end}
 .neighbor:hover{background:var(--bg-sub)}
 .neighbor .nk{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--fg-dim);display:inline-flex;align-items:center;gap:5px}
@@ -205,7 +226,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 
 /* ── JWT ── */
 .jwt-parts{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
-.jwt-part{border-radius:10px;border:1px solid var(--line);overflow:hidden}
+.jwt-part{border-radius:12px;border:1px solid var(--line);overflow:hidden}
 .jwt-ph{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-sub);font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);border-bottom:1px solid var(--line);gap:8px}
 .jwt-ph .right{display:flex;align-items:center;gap:8px}
 .badge{font-size:9px;padding:2px 8px;border-radius:100px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-dim)}
@@ -213,7 +234,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .badge.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
 .jwt-body{position:relative;background:var(--surface);padding:30px 13px 11px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto}
 .jwt-body.empty{color:var(--fg-dim);font-style:italic;white-space:normal}
-.exp-banner{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;font-family:var(--mono);font-size:11px;margin-bottom:10px;letter-spacing:.03em}
+.exp-banner{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:11px;font-family:var(--mono);font-size:11px;margin-bottom:10px;letter-spacing:.03em}
 .exp-banner.valid{background:var(--accent-bg);color:var(--add-fg);border:1px solid var(--accent-dim)}
 .exp-banner.expired{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-line)}
 .exp-banner.no-exp{background:var(--bg-sub);color:var(--fg-dim);border:1px solid var(--line)}
@@ -221,11 +242,11 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 
 /* ── Hash ── */
 .hash-rows{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
-.hash-row{border-radius:10px;border:1px solid var(--line);overflow:hidden}
+.hash-row{border-radius:12px;border:1px solid var(--line);overflow:hidden}
 .hash-rh{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:var(--bg-sub);font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);border-bottom:1px solid var(--line)}
 .hash-val{background:var(--surface);padding:30px 13px 11px 13px;font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--fg);word-break:break-all;line-height:1.5;position:relative;min-height:62px}
 .hash-val.empty{color:var(--fg-dim);font-weight:400}
-.file-drop-hint{display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--line);border-radius:10px;padding:14px;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.07em;cursor:pointer;transition:all .15s;margin-bottom:14px}
+.file-drop-hint{display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--line);border-radius:12px;padding:14px;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.07em;cursor:pointer;transition:all .15s;margin-bottom:14px}
 .file-drop-hint:hover{border-color:var(--accent-dim);color:var(--accent);background:var(--accent-bg)}
 .file-drop-hint.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
 .file-drop-hint svg{width:14px;height:14px}
@@ -233,14 +254,14 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 /* ── JSON ── */
 .json-err-loc{font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:5px;opacity:0;transition:opacity .15s;min-height:14px}
 .json-err-loc.show{opacity:1}
-.json-out{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:32px 13px 13px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto;position:relative;min-height:64px;max-height:360px;overflow-y:auto}
+.json-out{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:32px 13px 13px 13px;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--fg);white-space:pre;overflow-x:auto;position:relative;min-height:64px;max-height:360px;overflow-y:auto}
 .json-out.empty{color:var(--fg-dim);font-style:italic;white-space:normal}
 
 /* ── Hex ── */
 .hex-opts{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
 
 /* ── HTML Entities ── */
-.entity-ref{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.entity-ref{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:14px}
 .entity-ref .ec{background:var(--bg-sub);padding:7px 9px;display:flex;justify-content:space-between;align-items:center;gap:6px;cursor:pointer;transition:background .12s}
 .entity-ref .ec:hover{background:var(--hover)}
 .entity-ref .ec.copied,.entity-ref .ec.copied:hover{background:var(--accent-bg)}
@@ -254,14 +275,14 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .rx-delim{font-family:var(--mono);font-size:20px;color:var(--fg-dim);display:flex;align-items:center;padding:0 2px}
 .rx-pattern-wrap{flex:1;position:relative}
 .rx-flags-wrap{display:flex;gap:4px;align-items:center}
-.rx-flag{font-family:var(--mono);font-size:11px;font-weight:600;width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:var(--bg-sub);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s;text-transform:lowercase}
+.rx-flag{font-family:var(--mono);font-size:11px;font-weight:600;width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--bg-sub);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s;text-transform:lowercase}
 .rx-flag.active{background:var(--accent);color:var(--on-accent);border-color:transparent}
-.rx-highlight-out{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px;font-family:var(--mono);font-size:13px;line-height:1.8;color:var(--fg);white-space:pre-wrap;word-break:break-all;min-height:80px;max-height:200px;overflow-y:auto}
+.rx-highlight-out{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px;font-family:var(--mono);font-size:13px;line-height:1.8;color:var(--fg);white-space:pre-wrap;word-break:break-all;min-height:80px;max-height:200px;overflow-y:auto}
 .rx-highlight-out mark{background:var(--mark);color:var(--fg);border-radius:2px;padding:0 1px}
 .rx-highlight-out mark.g1{background:var(--mark-1)}
 .rx-highlight-out mark.g2{background:var(--mark-2)}
 .rx-match-list{display:flex;flex-direction:column;gap:4px;margin-top:10px;max-height:160px;overflow-y:auto}
-.rx-match{background:var(--bg-sub);border:1px solid var(--line);border-radius:7px;padding:6px 10px;font-family:var(--mono);font-size:11.5px;display:flex;gap:10px;align-items:baseline}
+.rx-match{background:var(--bg-sub);border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-family:var(--mono);font-size:11.5px;display:flex;gap:10px;align-items:baseline}
 .rx-match .midx{color:var(--fg-dim);font-size:10px;min-width:48px}
 .rx-match .mval{color:var(--fg);word-break:break-all}
 .rx-match .mgrp{color:var(--fg-dim);font-size:10px}
@@ -270,7 +291,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 /* ── Diff ── */
 .diff-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 @media(max-width:500px){.diff-cols{grid-template-columns:1fr}}
-.diff-out{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px;max-height:400px;overflow-y:auto}
+.diff-out{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:14px;max-height:400px;overflow-y:auto}
 .diff-summary{font-family:var(--mono);font-size:10.5px;padding:8px 12px;background:var(--bg-sub);border-bottom:1px solid var(--line);color:var(--fg-dim);display:flex;gap:16px}
 .diff-summary .dadd{color:var(--add-fg)}
 .diff-summary .ddel{color:var(--del-fg)}
@@ -282,9 +303,9 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .diff-empty{padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.08em}
 
 /* ── Color ── */
-.color-swatch{width:100%;height:72px;border-radius:12px;border:1px solid var(--line);margin-bottom:14px;transition:background .2s;background:var(--bg-sub);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.08em}
+.color-swatch{width:100%;height:72px;border-radius:14px;border:1px solid var(--line);margin-bottom:14px;transition:background .2s;background:var(--bg-sub);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.08em}
 .color-formats{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.color-fmt{background:var(--surface);border:1px solid var(--line);border-radius:10px;display:flex;align-items:center;gap:0;overflow:hidden}
+.color-fmt{background:var(--surface);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:0;overflow:hidden}
 .color-fmt .cfk{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);padding:11px 12px;background:var(--bg-sub);border-right:1px solid var(--line);min-width:52px;text-align:center}
 .color-fmt .cfv{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--fg);padding:11px 110px 11px 13px;flex:1;word-break:break-all}
 .color-fmt .cfv.empty{color:var(--fg-dim);font-weight:400}
@@ -292,21 +313,21 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 
 /* ── UUID ── */
 .uuid-batch{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
-.uuid-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-family:var(--mono);font-size:12.5px;color:var(--fg)}
+.uuid-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:9px 12px;font-family:var(--mono);font-size:12.5px;color:var(--fg)}
 .uuid-item .uuid-val{flex:1;word-break:break-all;letter-spacing:.02em}
 .uuid-item .copy-btn{position:static;transform:none;flex-shrink:0}
-.uuid-validate{background:var(--bg-sub);border:1px solid var(--line);border-radius:10px;padding:10px 13px;font-family:var(--mono);font-size:11.5px;margin-top:6px;min-height:40px;line-height:1.55}
+.uuid-validate{background:var(--bg-sub);border:1px solid var(--line);border-radius:12px;padding:10px 13px;font-family:var(--mono);font-size:11.5px;margin-top:6px;min-height:40px;line-height:1.55}
 .uuid-validate.empty{color:var(--fg-dim)}
 .uuid-validate .valid{color:var(--add-fg)}
 .uuid-validate .invalid{color:var(--danger)}
 
 /* ── Unix ── */
-.unix-clock{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;padding:12px 115px 12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg-sub)}
+.unix-clock{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;padding:12px 115px 12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg-sub)}
 .unix-clock .lv{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .unix-clock .lu{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim)}
 .unix-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
 @media(max-width:480px){.unix-cols{grid-template-columns:1fr}}
-.use-now{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-dim);background:transparent;border:1px solid var(--line);border-radius:6px;padding:3px 9px;cursor:pointer;transition:all .15s}
+.use-now{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-dim);background:transparent;border:1px solid var(--line);border-radius:8px;padding:3px 9px;cursor:pointer;transition:all .15s}
 .use-now:hover{color:var(--fg)}
 
 /* ── Password ── */
@@ -317,7 +338,7 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .pwd-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);cursor:grab}
 .pwd-slider:focus{outline:none}
 .pwd-slider:focus::-webkit-slider-thumb{box-shadow:0 0 0 4px var(--accent-ring)}
-.pwd-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:14px;overflow:hidden;transition:border-color .2s,background-color .15s,transform .08s}
+.pwd-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:14px;overflow:hidden;transition:border-color .2s,background-color .15s,transform .08s}
 .pwd-card .pwd-meta{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-dim);margin-bottom:10px}
 .pwd-card .pwd-meta .strength{display:inline-flex;align-items:center;gap:7px}
 .pwd-card .pwd-meta .strength .bar{display:inline-flex;gap:2px}
@@ -333,12 +354,12 @@ input.fi.invalid,textarea.fi.invalid{border-color:var(--danger);box-shadow:0 0 0
 .pwd-foot .copy-hint{display:inline-flex;align-items:center;gap:7px;transition:color .15s}
 .pwd-foot .copy-hint svg{width:11px;height:11px}
 .pwd-card.copied .copy-hint{color:var(--accent)}
-.pwd-regen{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-dim);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.pwd-regen{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-dim);background:transparent;border:1px solid var(--line);border-radius:8px;padding:4px 10px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
 .pwd-regen:hover{color:var(--fg);border-color:var(--line-hover)}
 .pwd-regen svg{width:11px;height:11px}
 
 /* ── QR ── */
-.qr-stage{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;min-height:280px;transition:border-color .15s,background-color .15s,transform .08s}
+.qr-stage{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;min-height:280px;transition:border-color .15s,background-color .15s,transform .08s}
 .qr-stage.empty{background:var(--bg-sub);border-style:dashed}
 .qr-stage svg{display:block;width:min(100%,260px);height:auto;image-rendering:pixelated;-webkit-tap-highlight-color:transparent}
 .qr-stage .qr-empty-msg{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-dim);text-align:center;line-height:1.6}
@@ -363,25 +384,33 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   .legal{display:none !important}
 }
 
+/* Domain-gated legal bar: only the canonical production hostname shows
+   the © + Privacy Policy strip. Set by the early <head> script via
+   <html data-legal>. */
+html[data-legal="off"] .legal{display:none !important}
+
 
 /* ══ THEME SWITCHER ══ */
-.theme-btn{position:fixed;top:16px;right:20px;z-index:9000;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--bg-sub);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s;backdrop-filter:blur(8px)}
+.theme-btn{position:fixed;top:16px;right:20px;z-index:9000;width:32px;height:32px;border-radius:11px;border:1px solid var(--line);background:var(--bg-sub);color:var(--fg-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s;backdrop-filter:blur(8px)}
 .theme-btn:hover{color:var(--fg);border-color:var(--line-hover)}
 .theme-btn svg{width:14px;height:14px}
-.theme-panel{position:fixed;top:56px;right:20px;z-index:9000;width:224px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 32px oklch(0 0 0/.12),0 2px 8px oklch(0 0 0/.06);display:none;animation:tpIn .15s ease}
+.theme-panel{position:fixed;top:56px;right:20px;z-index:9000;width:224px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 8px 32px oklch(0 0 0/.12),0 2px 8px oklch(0 0 0/.06);display:none;animation:tpIn .15s ease}
 .theme-panel.open{display:block}
 @keyframes tpIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .tp-lbl{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--fg-dim);margin-bottom:8px}
 .tp-modes{display:flex;gap:4px;margin-bottom:14px}
-.tp-mode{flex:1;font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:500;color:var(--fg-dim);background:var(--bg-sub);border:1px solid var(--line);border-radius:7px;padding:7px 0 5px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tp-mode{flex:1;font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:500;color:var(--fg-dim);background:var(--bg-sub);border:1px solid var(--line);border-radius:9px;padding:7px 0 5px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px}
 .tp-mode svg{width:12px;height:12px}
 .tp-mode.active{background:var(--accent);color:var(--on-accent);border-color:transparent}
 .tp-mode:hover:not(.active){color:var(--fg)}
 .tp-divider{height:1px;background:var(--line-2);margin:0 0 12px}
 .tp-palette{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.tp-swatch{aspect-ratio:1;border-radius:8px;cursor:pointer;border:2.5px solid transparent;transition:transform .12s,border-color .15s;display:grid;place-items:center}
+.tp-swatch{aspect-ratio:1;border-radius:9px;cursor:pointer;transition:transform .12s,box-shadow .15s;display:grid;place-items:center}
 .tp-swatch:hover{transform:scale(1.1)}
-.tp-swatch.active{border-color:var(--fg)}
+/* Active ring uses box-shadow (not border) so the gradient fills the
+   full rounded shape and the ring follows the same curve outside —
+   no more "rounded box with a square inside" mismatch. */
+.tp-swatch.active{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--fg)}
 .tp-swatch svg{width:10px;height:10px;color:#fff;opacity:0;transition:opacity .15s;filter:drop-shadow(0 1px 2px oklch(0 0 0/.4))}
 .tp-swatch.active svg{opacity:1}
 
@@ -406,11 +435,13 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   :root{--page-pad:16px;--legal-h:44px}
   html,body{min-height:100%;overflow-x:hidden}
   body{align-items:stretch;padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(var(--legal-h) + env(safe-area-inset-bottom) + 14px)}
-  /* In PWA standalone the .legal bar is hidden, so reclaim the space
-     the body was reserving for it. */
+  /* When the .legal bar is hidden — either because we're in PWA standalone
+     mode, or because we're on a non-canonical domain (data-legal="off") —
+     reclaim the bottom space the body was reserving for it. */
   @media (display-mode: standalone){
     body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px)}
   }
+  html[data-legal="off"] body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px)}
   .shell{width:auto;max-width:100%;min-width:0;margin:0 0 auto}
   /* pin SUB&SUB legal strip flush to the viewport bottom on mobile.
      Mirror the privacy.html .legal styling 1:1 so the two pages look
@@ -445,7 +476,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   .out-box{padding:12px 110px 12px 13px}
   .strip,.strip-2,.strip-4{grid-template-columns:1fr}
   .strip .cell{padding:10px 12px}
-  .code-card{border-radius:12px;padding:16px 14px 0}
+  .code-card{border-radius:14px;padding:16px 14px 0}
   .cmeta{flex-wrap:wrap;gap:6px}
   .neighbors{gap:5px}
   .neighbor .nv{font-size:14px}
@@ -471,7 +502,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   .unix-clock{justify-content:space-between}
   footer{margin-top:28px;flex-wrap:wrap;gap:8px 14px;line-height:1.5}
   footer .priv{line-height:1.5}
-  .theme-btn{top:calc(10px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));width:40px;height:40px;border-radius:11px}
+  .theme-btn{top:calc(10px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));width:40px;height:40px;border-radius:13px}
   .theme-panel{top:calc(58px + env(safe-area-inset-top));right:var(--page-pad);left:var(--page-pad);width:auto}
 }
 
@@ -509,7 +540,7 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 .tab{position:relative;z-index:1}
 .tab-indicator{
   position:absolute;top:4px;bottom:4px;left:0;width:0;
-  background:var(--surface);border-radius:8px;
+  background:var(--surface);border-radius:10px;
   box-shadow:0 1px 3px oklch(0 0 0/.07),0 0 0 1px oklch(0 0 0/.04);
   pointer-events:none;z-index:0;
   will-change:left,width,opacity;
@@ -548,14 +579,22 @@ html[data-anim="off"] .tabs-wrap.intro .tabs{animation:none!important}
 html[data-anim="off"] .tab-indicator{display:none!important}
 html[data-anim="off"] .tab-indicator.live{transition:none!important}
 </style>
-<!-- Resolve the master animation gate as early as possible so first paint
-     already reflects the user's choice (no flash of intro). -->
+<!-- Resolve early gates synchronously so first paint already reflects them
+     (no flash of intro animation, no flash of the legal bar on non-canonical
+     domains). Both write attributes onto <html> for CSS to read. -->
 <script>
 (function(){
+  var html=document.documentElement;
+  // Master animation gate
   var s=null;try{s=localStorage.getItem('dt-anim');}catch(e){}
   var m=s||'auto';
   var on=m==='on'||(m==='auto'&&!matchMedia('(prefers-reduced-motion: reduce)').matches);
-  document.documentElement.setAttribute('data-anim',on?'on':'off');
+  html.setAttribute('data-anim',on?'on':'off');
+  // Legal-bar gate: copyright + Privacy Policy show ONLY on the canonical
+  // production domain. Cloudflare Pages preview URLs (*.pages.dev), raw IPs,
+  // localhost, and any other custom/staging domain hide the legal strip.
+  html.setAttribute('data-legal',
+    location.hostname.toLowerCase()==='tool.subnsub.com'?'on':'off');
 })();
 </script>
 </head>
@@ -644,15 +683,15 @@ html[data-anim="off"] .tab-indicator.live{transition:none!important}
 <section class="panel active" id="panel-base64">
   <div class="phead"><h1>Base64</h1><p>Encode plain text to Base64 (RFC 4648) or decode back. Handles Unicode (UTF-8).</p></div>
   <div class="toggle-row">
-    <button class="tog active" data-b64="encode">Encode</button>
-    <button class="tog" data-b64="decode">Decode</button>
+    <button class="tog active" data-b64="decode">Decode</button>
+    <button class="tog" data-b64="encode">Encode</button>
   </div>
   <label class="field">
-    <span class="flabel"><span id="b64-in-lbl">Plain text</span><span class="fhint" id="b64-in-cnt">0 chars</span></span>
-    <textarea id="b64-in" class="fi" rows="4" placeholder="Type or paste here…"></textarea>
+    <span class="flabel"><span id="b64-in-lbl">Base64 input</span><span class="fhint" id="b64-in-cnt">0 chars</span></span>
+    <textarea id="b64-in" class="fi" rows="4" placeholder="Paste Base64 string…"></textarea>
   </label>
   <div class="swap-row"><button class="swap-btn" id="b64-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
-  <div class="flabel" style="margin-bottom:7px"><span id="b64-out-lbl">Base64 output</span><span class="fhint" id="b64-out-cnt"></span></div>
+  <div class="flabel" style="margin-bottom:7px"><span id="b64-out-lbl">Decoded text</span><span class="fhint" id="b64-out-cnt"></span></div>
   <div class="out-box copyable" id="b64-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="b64-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"></span></div>
   <div class="ferr" id="b64-err">&nbsp;</div>
 </section>
@@ -661,17 +700,17 @@ html[data-anim="off"] .tab-indicator.live{transition:none!important}
 <section class="panel" id="panel-url">
   <div class="phead"><h1>URL Encoder / Decoder</h1><p>Percent-encode or decode. Choose <b>Component</b> (encodes everything) or <b>Full URL</b> (preserves :/?#[] structure).</p></div>
   <div class="toggle-row">
-    <button class="tog active" data-url="encode">Encode</button>
-    <button class="tog" data-url="decode">Decode</button>
+    <button class="tog active" data-url="decode">Decode</button>
+    <button class="tog" data-url="encode">Encode</button>
     <button class="tog active" data-urlm="component" style="margin-left:8px">Component</button>
     <button class="tog" data-urlm="full">Full URL</button>
   </div>
   <label class="field">
-    <span class="flabel"><span id="url-in-lbl">Input</span><span class="fhint" id="url-in-cnt">0 chars</span></span>
-    <textarea id="url-in" class="fi" rows="3" placeholder="https://example.com/path?q=hello world&foo=bar"></textarea>
+    <span class="flabel"><span id="url-in-lbl">Encoded input</span><span class="fhint" id="url-in-cnt">0 chars</span></span>
+    <textarea id="url-in" class="fi" rows="3" placeholder="https%3A%2F%2Fexample.com%2Fpath%3Fq%3Dhello%20world"></textarea>
   </label>
   <div class="swap-row"><button class="swap-btn" id="url-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
-  <div class="flabel" style="margin-bottom:7px"><span id="url-out-lbl">Encoded output</span><span class="fhint" id="url-out-cnt"></span></div>
+  <div class="flabel" style="margin-bottom:7px"><span id="url-out-lbl">Decoded output</span><span class="fhint" id="url-out-cnt"></span></div>
   <div class="out-box copyable" id="url-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="url-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"></span></div>
   <div class="ferr" id="url-err">&nbsp;</div>
 </section>
@@ -746,8 +785,8 @@ html[data-anim="off"] .tab-indicator.live{transition:none!important}
 <section class="panel" id="panel-hex">
   <div class="phead"><h1>Hex Converter</h1><p>Convert text to hex bytes or decode hex back to text. Choose display format below.</p></div>
   <div class="toggle-row">
-    <button class="tog active" data-hex="encode">Text → Hex</button>
-    <button class="tog" data-hex="decode">Hex → Text</button>
+    <button class="tog active" data-hex="decode">Hex → Text</button>
+    <button class="tog" data-hex="encode">Text → Hex</button>
   </div>
   <div class="hex-opts toggle-row">
     <button class="tog active" data-sep="space">Space</button>
@@ -756,11 +795,11 @@ html[data-anim="off"] .tab-indicator.live{transition:none!important}
     <button class="tog" data-sep="colon">Colon</button>
   </div>
   <label class="field">
-    <span class="flabel"><span id="hex-in-lbl">Text input</span><span class="fhint" id="hex-in-cnt">0 chars</span></span>
-    <textarea id="hex-in" class="fi" rows="3" placeholder="Hello, world!"></textarea>
+    <span class="flabel"><span id="hex-in-lbl">Hex input</span><span class="fhint" id="hex-in-cnt">0 chars</span></span>
+    <textarea id="hex-in" class="fi" rows="3" placeholder="48 65 6c 6c 6f"></textarea>
   </label>
   <div class="swap-row"><button class="swap-btn" id="hex-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
-  <div class="flabel" style="margin-bottom:7px"><span id="hex-out-lbl">Hex output</span><span class="fhint" id="hex-out-cnt"></span></div>
+  <div class="flabel" style="margin-bottom:7px"><span id="hex-out-lbl">Text output</span><span class="fhint" id="hex-out-cnt"></span></div>
   <div class="out-box copyable" id="hex-out-box" role="button" tabindex="0" aria-label="Click to copy output"><div class="out-val empty" id="hex-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"></span></div>
   <div class="ferr" id="hex-err">&nbsp;</div>
 </section>
@@ -769,17 +808,17 @@ html[data-anim="off"] .tab-indicator.live{transition:none!important}
 <section class="panel" id="panel-html">
   <div class="phead"><h1>HTML Entities</h1><p>Encode special characters to HTML entities, or decode them back. Click a reference entry to insert it.</p></div>
   <div class="toggle-row">
-    <button class="tog active" data-html="encode">Encode</button>
-    <button class="tog" data-html="decode">Decode</button>
+    <button class="tog active" data-html="decode">Decode</button>
+    <button class="tog" data-html="encode">Encode</button>
     <button class="tog active" data-htmlm="safe">Safe chars only</button>
     <button class="tog" data-htmlm="all">All non-ASCII</button>
   </div>
   <label class="field">
-    <span class="flabel"><span id="html-in-lbl">Input</span><span class="fhint" id="html-in-cnt">0 chars</span></span>
-    <textarea id="html-in" class="fi" rows="3" placeholder="<p>Hello & &quot;world&quot;</p>"></textarea>
+    <span class="flabel"><span id="html-in-lbl">Encoded input</span><span class="fhint" id="html-in-cnt">0 chars</span></span>
+    <textarea id="html-in" class="fi" rows="3" placeholder="&amp;lt;p&amp;gt;Hello &amp;amp; &amp;quot;world&amp;quot;&amp;lt;/p&amp;gt;"></textarea>
   </label>
   <div class="swap-row"><button class="swap-btn" id="html-swap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 6l3-3M3 6l3 3M13 10H3M13 10l-3-3M13 10l-3 3"/></svg>Swap</button></div>
-  <div class="flabel" style="margin-bottom:7px"><span id="html-out-lbl">Encoded output</span></div>
+  <div class="flabel" style="margin-bottom:7px"><span id="html-out-lbl">Decoded output</span></div>
   <div class="out-box copyable" id="html-out-box" role="button" tabindex="0" aria-label="Click to copy output" style="margin-bottom:14px"><div class="out-val empty" id="html-out">Output will appear here</div><span class="copy-btn" aria-hidden="true"></span></div>
   <div class="flabel" style="margin-bottom:7px"><span>Common entities — click to copy</span></div>
   <div class="entity-ref" id="entity-ref"></div>
@@ -1056,8 +1095,12 @@ window.addEventListener('resize', () => {
    1) tabs-wrap fades in from above with a blur-clear (~550ms)
    2) on narrow screens, the strip starts scrolled to the right end
    3) an "indicator pill" — visually identical to .tab.active — slides
-      from the last tab back to Base64 (~420ms), pulling the scroll along
-   4) Base64 gains .active and the indicator cross-fades out
+      from the last tab back to the default tab (~420ms), pulling the
+      scroll along
+   4) the default tab gains .active and the indicator settles in place
+
+   The "default tab" is whichever tab carries .active in the HTML — so
+   reordering or renaming tabs requires no change here.
 */
 (function tabsIntro(){
   // Master gate: skip the entire intro if Motion is disabled. The page is
@@ -1065,13 +1108,13 @@ window.addEventListener('resize', () => {
   if (document.documentElement.getAttribute('data-anim') !== 'on') return;
 
   const allTabs = Array.from(document.querySelectorAll('.tab'));
-  const baseTab = document.querySelector('.tab[data-tab="base64"]');
+  const defaultTab = document.querySelector('.tab.active') || allTabs[0];
   const lastTab = allTabs[allTabs.length - 1];
-  if (!baseTab || !lastTab) return;
+  if (!defaultTab || !lastTab) return;
 
   // Suspend Base64's active visual + start toolbar entrance synchronously
   // (parser-blocking script → no first-paint flash).
-  baseTab.classList.remove('active');
+  defaultTab.classList.remove('active');
   _tabsWrap.classList.add('intro');
 
   // If the user activates any tab during the intro, abort gracefully and let
@@ -1097,7 +1140,7 @@ window.addEventListener('resize', () => {
     _tabsEl.insertBefore(indicator, _tabsEl.firstChild);
 
     const startX = lastTab.offsetLeft, startW = lastTab.offsetWidth;
-    const endX   = baseTab.offsetLeft, endW   = baseTab.offsetWidth;
+    const endX   = defaultTab.offsetLeft, endW   = defaultTab.offsetWidth;
     const startScroll = Math.max(0, _tabsEl.scrollWidth - _tabsEl.clientWidth);
 
     indicator.style.left  = startX + 'px';
@@ -1130,7 +1173,7 @@ window.addEventListener('resize', () => {
       // indicator's CSS transitions for subsequent tab clicks.
       _tabsEl.classList.add('has-indicator');
       indicator.classList.add('live');
-      baseTab.classList.add('active');
+      defaultTab.classList.add('active');
     };
     requestAnimationFrame(step);
   };
@@ -1217,7 +1260,7 @@ totpReset('waiting'); totpTick(); setInterval(totpTick,250);
 /* ═══════════════════════════════════════
    BASE64
 ═══════════════════════════════════════ */
-let b64mode='encode';
+let b64mode='decode';
 function b64update(){
   const v=$('b64-in').value;
   $('b64-in-cnt').textContent=`${v.length} chars`;
@@ -1246,7 +1289,7 @@ bindCopy('b64-out-box',()=>$('b64-out').textContent);
 /* ═══════════════════════════════════════
    URL
 ═══════════════════════════════════════ */
-let urlMode='encode', urlMeth='component';
+let urlMode='decode', urlMeth='component';
 function urlUpdate(){
   const v=$('url-in').value;
   $('url-in-cnt').textContent=`${v.length} chars`;
@@ -1259,7 +1302,7 @@ function urlUpdate(){
     out.textContent=r; out.classList.remove('empty'); $('url-out-cnt').textContent=`${r.length} chars`; err.classList.remove('show');
   }catch{ out.textContent='Output will appear here'; out.classList.add('empty'); $('url-out-cnt').textContent=''; err.textContent='Invalid encoded string'; err.classList.add('show'); }
 }
-document.querySelectorAll('[data-url]').forEach(btn=>{ btn.addEventListener('click',()=>{ urlMode=btn.dataset.url; document.querySelectorAll('[data-url]').forEach(b=>b.classList.toggle('active',b.dataset.url===urlMode)); $('url-in-lbl').textContent=urlMode==='encode'?'Input':'Encoded input'; $('url-out-lbl').textContent=urlMode==='encode'?'Encoded output':'Decoded output'; urlUpdate(); }); });
+document.querySelectorAll('[data-url]').forEach(btn=>{ btn.addEventListener('click',()=>{ urlMode=btn.dataset.url; document.querySelectorAll('[data-url]').forEach(b=>b.classList.toggle('active',b.dataset.url===urlMode)); $('url-in-lbl').textContent=urlMode==='encode'?'Input':'Encoded input'; $('url-out-lbl').textContent=urlMode==='encode'?'Encoded output':'Decoded output'; $('url-in').placeholder=urlMode==='encode'?'https://example.com/path?q=hello world&foo=bar':'https%3A%2F%2Fexample.com%2Fpath%3Fq%3Dhello%20world'; urlUpdate(); }); });
 document.querySelectorAll('[data-urlm]').forEach(btn=>{ btn.addEventListener('click',()=>{ urlMeth=btn.dataset.urlm; document.querySelectorAll('[data-urlm]').forEach(b=>b.classList.toggle('active',b.dataset.urlm===urlMeth)); urlUpdate(); }); });
 $('url-in').addEventListener('input',urlUpdate);
 $('url-swap').addEventListener('click',()=>{ const out=$('url-out'); if(out.classList.contains('empty'))return; $('url-in').value=out.textContent; const nm=urlMode==='encode'?'decode':'encode'; document.querySelector(`[data-url="${nm}"]`).click(); });
@@ -1403,7 +1446,7 @@ drop.addEventListener('drop',async e=>{ e.preventDefault(); drop.classList.remov
 /* ═══════════════════════════════════════
    HEX
 ═══════════════════════════════════════ */
-let hexMode='encode', hexSep='space';
+let hexMode='decode', hexSep='space';
 function hexUpdate(){
   const v=$('hex-in').value;
   $('hex-in-cnt').textContent=`${v.length} chars`;
@@ -1441,7 +1484,7 @@ bindCopy('hex-out-box',()=>$('hex-out').textContent);
 /* ═══════════════════════════════════════
    HTML ENTITIES
 ═══════════════════════════════════════ */
-let htmlMode='encode', htmlMeth='safe';
+let htmlMode='decode', htmlMeth='safe';
 const ENTITIES=[['&','&amp;'],['<','&lt;'],['>','&gt;'],['"','&quot;'],["'",'&#x27;'],['©','&copy;'],['®','&reg;'],['™','&trade;'],['€','&euro;'],['£','&pound;'],['¥','&yen;'],['…','&hellip;'],['—','&mdash;'],['–','&ndash;'],['←','&larr;'],['→','&rarr;']];
 function htmlEntEncode(s,all){
   const safeMap={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;'};
