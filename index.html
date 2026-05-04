@@ -595,6 +595,28 @@ html[data-anim="off"] .tab-indicator.live{transition:none!important}
   // localhost, and any other custom/staging domain hide the legal strip.
   html.setAttribute('data-legal',
     location.hostname.toLowerCase()==='tool.subnsub.com'?'on':'off');
+  // Theme paint — apply the resolved CSS vars from the previous session
+  // BEFORE first paint, so a non-default palette (e.g. ocean blue) doesn't
+  // flash the CSS-default sage green for ~50-150ms before applyTheme()
+  // runs at the end of <body>. The cache is written by applyTheme() on
+  // every theme/palette change. We re-resolve dark/light against the live
+  // OS preference here so 'auto' users don't get a stale cached variant
+  // when their system theme has flipped between sessions.
+  try{
+    var c=localStorage.getItem('dt-themecache');
+    if(c){
+      var d=JSON.parse(c);
+      if(d&&d.light&&d.dark){
+        var nowDark=d.mode==='dark'||(d.mode!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);
+        var picked=nowDark?d.dark:d.light;
+        var st=html.style;
+        for(var k in picked){
+          if(Object.prototype.hasOwnProperty.call(picked,k)) st.setProperty(k,picked[k]);
+        }
+        html.setAttribute('data-mode',nowDark?'dark':'light');
+      }
+    }
+  }catch(e){}
 })();
 </script>
 </head>
@@ -2331,8 +2353,14 @@ function syncThemeColor(){
 function applyTheme(){
   const dark=isDarkNow(),selected=PALETTES.find(x=>x.id===tPal),root=document.documentElement;
   root.setAttribute('data-mode',dark?'dark':'light');
-  const vars=selected?paletteTheme(dark,selected):BASE_THEMES[dark?'dark':'light'];
+  const lightVars=selected?paletteTheme(false,selected):BASE_THEMES.light;
+  const darkVars =selected?paletteTheme(true ,selected):BASE_THEMES.dark;
+  const vars=dark?darkVars:lightVars;
   Object.entries(vars).forEach(([k,v])=>setThemeVar(k,v));
+  // Cache BOTH variants + the user's mode preference so the next page load
+  // can paint the right one before first frame, even if the OS dark-mode
+  // preference flipped while we were away (matters for 'auto' mode).
+  try{localStorage.setItem('dt-themecache',JSON.stringify({mode:tMode,light:lightVars,dark:darkVars}));}catch(e){}
   syncThemeColor();
   $('theme-btn').innerHTML=THEME_ICONS[tMode];
   // Scope to theme buttons only — Motion buttons share the .tp-mode class
