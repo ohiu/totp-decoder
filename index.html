@@ -504,12 +504,60 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   .tp-palette{grid-template-columns:repeat(5,1fr)}
 }
 
-/* ══ REDUCED MOTION ══ */
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
-  .cmeta .pulse{animation:none;opacity:.7}
+/* ══ TAB BAR INTRO (first-load) ══ */
+.tabs{position:relative}
+.tab{position:relative;z-index:1}
+.tab-indicator{
+  position:absolute;top:4px;bottom:4px;left:0;width:0;
+  background:var(--surface);border-radius:8px;
+  box-shadow:0 1px 3px oklch(0 0 0/.07),0 0 0 1px oklch(0 0 0/.04);
+  pointer-events:none;z-index:0;
+  will-change:left,width,opacity;
 }
+[data-mode="dark"] .tab-indicator{box-shadow:0 1px 3px oklch(0 0 0/.3),0 0 0 1px oklch(1 0 0/.06)}
+.tab-indicator.live{transition:left .3s cubic-bezier(.22,.61,.36,1),width .3s cubic-bezier(.22,.61,.36,1)}
+/* When the moving indicator is the live highlight, the active tab itself
+   no longer paints its own pill — only its text color stays darker. */
+.tabs.has-indicator .tab.active{background:transparent;box-shadow:none}
+.tabs-wrap.intro{pointer-events:none;animation:introWrap .55s cubic-bezier(.22,.61,.36,1) both}
+.tabs-wrap.intro .tabs{animation:introTabs .55s cubic-bezier(.22,.61,.36,1) both}
+@keyframes introWrap{from{opacity:0;filter:blur(6px)}to{opacity:1;filter:blur(0)}}
+@keyframes introTabs{from{transform:translateY(-10px) scale(.985)}to{transform:translateY(0) scale(1)}}
+
+/* ══ REDUCED MOTION ══
+   Honors the OS-level preference, but if the user has explicitly opted
+   into Motion=On via our toggle (data-anim="on"), they've overridden the
+   system setting on purpose — let animations run normally. */
+@media(prefers-reduced-motion:reduce){
+  html:not([data-anim="on"]) *,
+  html:not([data-anim="on"]) *::before,
+  html:not([data-anim="on"]) *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+  html:not([data-anim="on"]) .cmeta .pulse{animation:none;opacity:.7}
+}
+
+/* ══ MASTER ANIMATION GATE ══
+   Single source of truth: <html data-anim="on"|"off">. Only suppresses
+   animations introduced from the Motion-toggle change onwards (intro,
+   tab indicator, …). Pre-existing animations (TOTP pulse, theme panel
+   pop, etc.) deliberately keep working — Motion-off means "no NEW
+   animations", not "freeze the page".
+   Future animations should hang off `html[data-anim="on"] …` selectors
+   or check `animOn()` in JS so they participate in this gate. */
+html[data-anim="off"] .tabs-wrap.intro,
+html[data-anim="off"] .tabs-wrap.intro .tabs{animation:none!important}
+html[data-anim="off"] .tab-indicator{display:none!important}
+html[data-anim="off"] .tab-indicator.live{transition:none!important}
 </style>
+<!-- Resolve the master animation gate as early as possible so first paint
+     already reflects the user's choice (no flash of intro). -->
+<script>
+(function(){
+  var s=null;try{s=localStorage.getItem('dt-anim');}catch(e){}
+  var m=s||'auto';
+  var on=m==='on'||(m==='auto'&&!matchMedia('(prefers-reduced-motion: reduce)').matches);
+  document.documentElement.setAttribute('data-anim',on?'on':'off');
+})();
+</script>
 </head>
 <body>
 <main class="shell">
@@ -906,6 +954,13 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
   <div class="tp-divider"></div>
   <div class="tp-lbl">Palette</div>
   <div class="tp-palette" id="tp-palette"></div>
+  <div class="tp-divider" style="margin-top:14px"></div>
+  <div class="tp-lbl">Motion</div>
+  <div class="tp-modes">
+    <button class="tp-mode" data-anim="auto"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><text x="8" y="12.4" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="12" font-weight="700" fill="currentColor">A</text></svg>Auto</button>
+    <button class="tp-mode" data-anim="on"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8c1.5-3 3-3 4.5 0s3 3 4.5 0M11.5 8h2"/></svg>On</button>
+    <button class="tp-mode" data-anim="off"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3 8h10"/></svg>Off</button>
+  </div>
 </div>
 
 <script>
@@ -962,6 +1017,12 @@ document.querySelectorAll('.tab').forEach(btn => {
     btn.classList.add('active');
     $('panel-' + btn.dataset.tab).classList.add('active');
     $('footer-ref').textContent = footerRef[btn.dataset.tab] || '';
+    // Slide the live indicator to the clicked tab — CSS transition does the rest.
+    const ind = _tabsEl.querySelector('.tab-indicator.live');
+    if (ind) {
+      ind.style.left  = btn.offsetLeft  + 'px';
+      ind.style.width = btn.offsetWidth + 'px';
+    }
     btn.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});
   });
 });
@@ -977,6 +1038,108 @@ function updateTabsFade(){
 _tabsEl.addEventListener('scroll', updateTabsFade, {passive:true});
 window.addEventListener('resize', updateTabsFade);
 updateTabsFade();
+
+// Re-snap the live indicator on viewport resize: tab geometry can change,
+// and we want no animation here — just a silent re-alignment.
+window.addEventListener('resize', () => {
+  const ind = _tabsEl.querySelector('.tab-indicator.live');
+  const act = _tabsEl.querySelector('.tab.active');
+  if (!ind || !act) return;
+  ind.style.transition = 'none';
+  ind.style.left  = act.offsetLeft  + 'px';
+  ind.style.width = act.offsetWidth + 'px';
+  void ind.offsetWidth;
+  ind.style.transition = '';
+});
+
+/* ─── first-load tab bar intro animation ───
+   1) tabs-wrap fades in from above with a blur-clear (~550ms)
+   2) on narrow screens, the strip starts scrolled to the right end
+   3) an "indicator pill" — visually identical to .tab.active — slides
+      from the last tab back to Base64 (~420ms), pulling the scroll along
+   4) Base64 gains .active and the indicator cross-fades out
+*/
+(function tabsIntro(){
+  // Master gate: skip the entire intro if Motion is disabled. The page is
+  // expected to look like its pre-animation original state.
+  if (document.documentElement.getAttribute('data-anim') !== 'on') return;
+
+  const allTabs = Array.from(document.querySelectorAll('.tab'));
+  const baseTab = document.querySelector('.tab[data-tab="base64"]');
+  const lastTab = allTabs[allTabs.length - 1];
+  if (!baseTab || !lastTab) return;
+
+  // Suspend Base64's active visual + start toolbar entrance synchronously
+  // (parser-blocking script → no first-paint flash).
+  baseTab.classList.remove('active');
+  _tabsWrap.classList.add('intro');
+
+  // If the user activates any tab during the intro, abort gracefully and let
+  // the normal click handler take over. We listen on `click` (not pointerdown)
+  // so keyboard activation (Tab + Enter/Space → synthesized click) is also
+  // caught — otherwise the intro could finish later and re-set Base64 active,
+  // contradicting the keyboard-selected tab. Mouse clicks during the toolbar
+  // entrance are still blocked by .tabs-wrap.intro's pointer-events:none, so
+  // this doesn't introduce any regression for pointer users.
+  let killed = false;
+  const onUserActivate = () => { killed = true; };
+  allTabs.forEach(t => t.addEventListener('click', onUserActivate, {once:true}));
+
+  const slidePhase = () => {
+    // If Motion was turned off mid-intro, abort cleanly.
+    if (killed || document.documentElement.getAttribute('data-anim') !== 'on') {
+      _tabsWrap.classList.remove('intro');
+      return;
+    }
+
+    const indicator = document.createElement('div');
+    indicator.className = 'tab-indicator';
+    _tabsEl.insertBefore(indicator, _tabsEl.firstChild);
+
+    const startX = lastTab.offsetLeft, startW = lastTab.offsetWidth;
+    const endX   = baseTab.offsetLeft, endW   = baseTab.offsetWidth;
+    const startScroll = Math.max(0, _tabsEl.scrollWidth - _tabsEl.clientWidth);
+
+    indicator.style.left  = startX + 'px';
+    indicator.style.width = startW + 'px';
+    if (startScroll > 0) _tabsEl.scrollLeft = startScroll;
+
+    // Toolbar entrance done — restore pointer events. The indicator pill is
+    // pointer-events:none so it doesn't block clicks during the slide.
+    _tabsWrap.classList.remove('intro');
+
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const dur = 420;
+
+    let t0 = null;
+    const step = (t) => {
+      if (killed || document.documentElement.getAttribute('data-anim') !== 'on') {
+        indicator.remove();
+        return;
+      }
+      if (t0 === null) t0 = t;
+      const p = Math.min(1, (t - t0) / dur);
+      const e = ease(p);
+      indicator.style.left  = (startX + (endX - startX) * e) + 'px';
+      indicator.style.width = (startW + (endW - startW) * e) + 'px';
+      if (startScroll > 0) _tabsEl.scrollLeft = Math.round(startScroll * (1 - e));
+      if (p < 1) { requestAnimationFrame(step); return; }
+
+      // Land: keep indicator as the persistent active highlight.
+      // .has-indicator suppresses .tab.active's own pill; .live arms the
+      // indicator's CSS transitions for subsequent tab clicks.
+      _tabsEl.classList.add('has-indicator');
+      indicator.classList.add('live');
+      baseTab.classList.add('active');
+    };
+    requestAnimationFrame(step);
+  };
+
+  // Wait until BOTH: fonts are ready (so geometry is stable) AND the toolbar
+  // entrance animation has had its 560ms to play.
+  const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+  Promise.all([fontsReady, new Promise(r => setTimeout(r, 560))]).then(slidePhase);
+})();
 
 /* ═══════════════════════════════════════
    TOTP
@@ -1963,7 +2126,11 @@ const PALETTES=[
   {id:'teal',    h:185,c:0.14,name:'Teal'},
   {id:'indigo',  h:260,c:0.20,name:'Indigo'},
 ];
-let tMode=localStorage.getItem('dt-mode')||'auto';
+let tMode=localStorage.getItem('dt-mode');
+// Validate: a previous bug could write the string "undefined" here when
+// a Motion button was clicked. Treat anything outside the known set as
+// 'auto' and rewrite storage so the bad value doesn't linger.
+if(tMode!=='auto'&&tMode!=='light'&&tMode!=='dark'){tMode='auto';localStorage.setItem('dt-mode',tMode);}
 let tPal=localStorage.getItem('dt-color')||'';
 localStorage.removeItem('dt-pal');
 function isDarkNow(){return tMode==='dark'||(tMode==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches);}
@@ -2125,7 +2292,9 @@ function applyTheme(){
   Object.entries(vars).forEach(([k,v])=>setThemeVar(k,v));
   syncThemeColor();
   $('theme-btn').innerHTML=THEME_ICONS[tMode];
-  document.querySelectorAll('.tp-mode').forEach(b=>{
+  // Scope to theme buttons only — Motion buttons share the .tp-mode class
+  // for styling but live in their own [data-anim] namespace.
+  document.querySelectorAll('[data-mode].tp-mode').forEach(b=>{
     b.classList.toggle('active',b.dataset.mode===tMode);
     const want=b.dataset.icon;
     if(want && !b.querySelector('svg')){
@@ -2144,30 +2313,105 @@ const THEME_ICONS={
   dark:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 10A6 6 0 016 4a6 6 0 000 8 6 6 0 006-2z"/></svg>`,
 };
 function buildPalette(){
-  const grid=$('tp-palette');grid.innerHTML='';
-  PALETTES.forEach(p=>{
-    const sw=document.createElement('div');sw.className='tp-swatch'+(p.id===tPal?' active':'');
-    sw.style.background=`linear-gradient(135deg,oklch(0.86 ${p.c*.35} ${p.h}),oklch(0.58 ${p.c} ${p.h}))`;sw.title=p.name;
-    sw.innerHTML=`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 5"/></svg>`;
-    sw.addEventListener('click',()=>{
-      if(tPal===p.id){
-        tPal='';
-        localStorage.removeItem('dt-color');
-      }else{
-        tPal=p.id;
-        localStorage.setItem('dt-color',tPal);
-      }
-      buildPalette();
-      applyTheme();
+  const grid=$('tp-palette');
+  // Idempotent: build the swatch DOM exactly once. Calling this from a
+  // swatch's own click handler used to wipe the grid mid-event, which
+  // detached e.target before the document-level outside-click listener
+  // ran — making it think the click happened outside the panel and
+  // close it. Now subsequent calls only refresh .active state.
+  if(!grid.dataset.built){
+    PALETTES.forEach(p=>{
+      const sw=document.createElement('div');
+      sw.className='tp-swatch';
+      sw.dataset.pal=p.id;
+      sw.style.background=`linear-gradient(135deg,oklch(0.86 ${p.c*.35} ${p.h}),oklch(0.58 ${p.c} ${p.h}))`;
+      sw.title=p.name;
+      sw.innerHTML=`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 5"/></svg>`;
+      sw.addEventListener('click',()=>{
+        if(tPal===p.id){
+          tPal='';
+          localStorage.removeItem('dt-color');
+        }else{
+          tPal=p.id;
+          localStorage.setItem('dt-color',tPal);
+        }
+        buildPalette();
+        applyTheme();
+      });
+      grid.appendChild(sw);
     });
-    grid.appendChild(sw);
+    grid.dataset.built='1';
+  }
+  grid.querySelectorAll('.tp-swatch').forEach(sw=>{
+    sw.classList.toggle('active', sw.dataset.pal===tPal);
   });
 }
-document.querySelectorAll('.tp-mode').forEach(btn=>btn.addEventListener('click',()=>{tMode=btn.dataset.mode;localStorage.setItem('dt-mode',tMode);applyTheme();}));
+document.querySelectorAll('[data-mode].tp-mode').forEach(btn=>btn.addEventListener('click',()=>{tMode=btn.dataset.mode;localStorage.setItem('dt-mode',tMode);applyTheme();}));
 $('theme-btn').addEventListener('click',e=>{e.stopPropagation();$('theme-panel').classList.toggle('open');});
 document.addEventListener('click',e=>{if(!$('theme-panel').contains(e.target)&&e.target!==$('theme-btn'))$('theme-panel').classList.remove('open');});
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(tMode==='auto')applyTheme();});
 buildPalette();applyTheme();
+
+/* ═══════════════════════════════════════
+   MOTION TOGGLE — single source of truth for ALL animations
+   ─────────────────────────────────────────────────────────
+   <html data-anim="on"|"off"> is the master gate. Every animation
+   (current and future) must be guarded by it. The early <head> script
+   sets the initial value before first paint; this block lets the user
+   override it live and persist the choice.
+═══════════════════════════════════════ */
+let aMode = localStorage.getItem('dt-anim') || 'auto';
+function animOn(){
+  return aMode === 'on'
+      || (aMode === 'auto' && !matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+function applyAnim(){
+  const on = animOn();
+  document.documentElement.setAttribute('data-anim', on ? 'on' : 'off');
+  document.querySelectorAll('[data-anim].tp-mode').forEach(b =>
+    b.classList.toggle('active', b.dataset.anim === aMode)
+  );
+  if (!on) {
+    // Off: tear down the live indicator so .tab.active reverts to its
+    // native pill — page returns to the pre-animation original look.
+    // Also drop the .intro class in case the user toggled mid-entrance,
+    // which would otherwise leave pointer-events:none on the toolbar.
+    const ind = _tabsEl.querySelector('.tab-indicator');
+    if (ind) ind.remove();
+    _tabsEl.classList.remove('has-indicator');
+    _tabsWrap.classList.remove('intro');
+  } else {
+    // On: if there's an active tab but no indicator yet (e.g. user just
+    // flipped Motion back on, or anim was off at first load), seed one
+    // silently over the active tab. We do NOT replay the intro — that
+    // is reserved for first load only.
+    if (!_tabsEl.querySelector('.tab-indicator.live')) {
+      const act = _tabsEl.querySelector('.tab.active');
+      if (act) {
+        const ind = document.createElement('div');
+        ind.className = 'tab-indicator live';
+        ind.style.transition = 'none';
+        ind.style.left  = act.offsetLeft  + 'px';
+        ind.style.width = act.offsetWidth + 'px';
+        _tabsEl.insertBefore(ind, _tabsEl.firstChild);
+        _tabsEl.classList.add('has-indicator');
+        void ind.offsetWidth;        // flush, then let CSS class transition take over
+        ind.style.transition = '';
+      }
+    }
+  }
+}
+document.querySelectorAll('[data-anim].tp-mode').forEach(btn =>
+  btn.addEventListener('click', () => {
+    aMode = btn.dataset.anim;
+    localStorage.setItem('dt-anim', aMode);
+    applyAnim();
+  })
+);
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => {
+  if (aMode === 'auto') applyAnim();
+});
+applyAnim();
 
 if('serviceWorker' in navigator && location.protocol !== 'file:'){
   window.addEventListener('load',()=>{
