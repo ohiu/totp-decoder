@@ -85,63 +85,22 @@ a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;t
 a:hover{border-bottom-color:var(--accent)}
 code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px solid var(--line-2);padding:1px 6px;border-radius:5px}
 .callout{background:var(--bg-sub);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:14px 16px;margin:18px 0;font-size:13.5px;color:var(--fg-mid);line-height:1.55}
-/* frosted-glass legal bar pinned to viewport bottom on every screen.
-   In iOS PWA standalone, env(safe-area-inset-bottom) is ~34px reserved
-   for the home-indicator gesture bar. If we add it as padding, the text
-   floats 34px above the screen edge — which is what was happening before.
-   We intentionally use a fixed small bottom padding instead, so the bar
-   hugs the actual screen bottom in PWA mode. The translucent iOS
-   home-indicator bar overlays our background harmlessly. */
-.legal{
-  position:fixed;left:0;right:0;bottom:0;z-index:8500;
-  width:auto;max-width:none;margin:0;
-  padding:10px var(--page-pad) 8px;
-  text-align:center;font-family:var(--mono);font-size:10px;
-  color:var(--fg-mid);letter-spacing:.14em;text-transform:uppercase;
-  background:color-mix(in oklch, var(--bg) 55%, transparent);
-  -webkit-backdrop-filter:saturate(140%) blur(8px);
-          backdrop-filter:saturate(140%) blur(8px);
-  border-top:1px solid var(--line-2);
-  box-shadow:0 -4px 18px oklch(0 0 0 / .04);
-}
-/* PWA standalone has too many WebKit quirks (no reliable backdrop-filter,
-   safe-area math drifts, etc.) — just hide the legal bar entirely when
-   the page is launched as an installed app. Body bottom padding is also
-   reclaimed below. Same rule lives in index.html. */
-@media (display-mode: standalone){
-  .legal{display:none !important}
-  body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px) !important}
-}
-/* Domain-gated copyright: the © SUB&SUB LLC text only shows on the
-   primary brand domain. Other-domain visitors still see the About /
-   Privacy links so they can reach those pages. Set by the early
-   <head> script via <html data-legal>. */
-html[data-legal="off"] .legal-brand{display:none}
 /* Domain-gated controller identity in the privacy body: visitors on the
    primary brand domain see the full legal entity name (GDPR/CCPA-grade),
-   other-domain visitors see the de-branded form. Same gate as .legal,
-   no separate hostname check. */
+   other-domain visitors see the de-branded form. Set by the early
+   <head> script via <html data-legal>. */
 html[data-legal="on"]  .brand-soft{display:none}
 html[data-legal="off"] .brand-strict{display:none}
-/* fallback when backdrop-filter isn't supported: fully solid */
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .legal{background:var(--bg)}
-}
-.legal a{color:inherit;text-decoration:none;transition:color .15s}
-.legal a:hover{color:var(--fg)}
-.legal .sep{margin:0 8px;opacity:.6}
-/* leave room so the fixed bar never covers content */
-body{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
 @media(max-width:640px){
   :root{--page-pad:16px}
-  body{padding-top:calc(18px + env(safe-area-inset-top));padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+  body{padding-top:calc(18px + env(safe-area-inset-top))}
   .shell{width:auto;max-width:100%;margin:0 0 auto}
   h1{font-size:22px}
   p,li{font-size:15px}
 }
 </style>
-<!-- Resolve the legal-bar gate before first paint so non-canonical
-     domains never flash the strip. Mirrors the same gate in index.html. -->
+<!-- Resolve the brand-soft/brand-strict gate before first paint so the
+     wrong legal entity name never flashes in the privacy body. -->
 <script>
 document.documentElement.setAttribute('data-legal',
   location.hostname.toLowerCase()==='tool.subnsub.com'?'on':'off');
@@ -237,7 +196,5 @@ document.documentElement.setAttribute('data-legal',
     <a href="mailto:privacy@200000.live">privacy@200000.live</a>.
   </p>
 </main>
-
-<div class="legal"><span class="legal-brand">&copy; 2026 SUB&amp;SUB LLC<span class="sep">&middot;</span></span><a href="about.html">About</a><span class="sep">&middot;</span><a href="index.html">Tools</a></div>
 </body>
 </html>
