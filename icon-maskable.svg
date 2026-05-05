@@ -1,8 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tools">
   <!-- full-bleed background so PWA mask cropping never shows transparency -->
   <rect width="512" height="512" fill="#f6f8f4"/>
-  <!-- centered filled panel (inside maskable safe zone) -->
-  <rect x="140" y="140" width="232" height="232" rx="40" fill="#1a1d18"/>
-  <!-- accent dot, kept at original 48-unit offset from panel top-left -->
-  <circle cx="188" cy="188" r="12" fill="#f6f8f4"/>
+  <!-- centered filled panel, sized at 62.5% so it stays inside the
+       maskable safe zone (inner 80% of canvas) under any mask shape -->
+  <rect x="96" y="96" width="320" height="320" rx="56" fill="#1a1d18"/>
+  <!-- accent dot, 20% inset from panel top-left -->
+  <circle cx="160" cy="160" r="16" fill="#f6f8f4"/>
 </svg>

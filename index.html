@@ -121,6 +121,7 @@
   --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 *{box-sizing:border-box}
+button:not(:disabled){cursor:pointer}
 html,body{height:100%;margin:0}
 body{
   font-family:var(--sans);color:var(--fg);
@@ -419,6 +420,11 @@ footer .priv .dot{width:5px;height:5px;border-radius:50%;background:var(--accent
 .legal a{color:inherit;text-decoration:none;transition:color .15s}
 .legal a:hover{color:var(--fg)}
 .legal .sep{margin:0 8px;opacity:.6}
+/* container that wraps the sponsored row + the legal links so they form
+   one bottom group; on desktop it is just a flex column that keeps each
+   child horizontally centered, on mobile it becomes the fixed frosted
+   strip (see narrow-screen block below) */
+.bottom-bar{display:flex;flex-direction:column;align-items:center}
 
 /* PWA standalone has too many WebKit quirks (no reliable backdrop-filter,
    safe-area math drifts, etc.) — just hide the legal bar entirely when
@@ -507,30 +513,49 @@ html[data-legal="off"] .legal-brand{display:none}
 
 /* ══ NARROW SCREEN ══ */
 @media(max-width:640px){
-  :root{--page-pad:16px;--legal-h:44px}
+  :root{--page-pad:16px;--bottom-h:78px}
   html,body{min-height:100%;overflow-x:hidden}
-  body{align-items:stretch;padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(var(--legal-h) + env(safe-area-inset-bottom) + 14px)}
-  /* In PWA standalone the legal bar is hidden entirely, so reclaim
-     the bottom space the body was reserving for it. */
+  body{align-items:stretch;padding:calc(18px + env(safe-area-inset-top)) var(--page-pad) calc(var(--bottom-h) + env(safe-area-inset-bottom) + 14px)}
+  /* In PWA standalone the bottom bar is hidden entirely (WebKit fixed-
+     blur quirks), so reclaim the bottom space the body was reserving. */
   @media (display-mode: standalone){
+    .bottom-bar{display:none}
     body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px)}
   }
   .shell{width:auto;max-width:100%;min-width:0;margin:0 0 auto}
-  /* pin legal strip flush to the viewport bottom on mobile.
-     Mirror the privacy.html .legal styling 1:1 so the two pages look
-     identical in PWA. */
-  .legal{
+  /* pin the bottom group (sponsored row + legal links) flush to the
+     viewport bottom as one frosted-glass strip. The first `background`
+     declaration is a solid fallback for browsers that ignore color-mix
+     (older Android WebViews); the second overwrites it with the
+     translucent value when supported. */
+  .bottom-bar{
     position:fixed;left:0;right:0;bottom:0;z-index:8500;
-    width:auto;max-width:none;margin:0;
-    padding:10px var(--page-pad) 8px;
+    background:var(--bg);
     background:color-mix(in oklch, var(--bg) 55%, transparent);
-    -webkit-backdrop-filter:saturate(140%) blur(8px);
-            backdrop-filter:saturate(140%) blur(8px);
+    -webkit-backdrop-filter:saturate(150%) blur(20px);
+            backdrop-filter:saturate(150%) blur(20px);
     border-top:1px solid var(--line-2);
     box-shadow:0 -4px 18px oklch(0 0 0 / .04);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  /* compact the sponsored row inside the bar so the strip stays short */
+  .bottom-bar .spons-block{width:auto;max-width:none;margin:0;padding:8px var(--page-pad) 4px}
+  .bottom-bar .spons-head{display:none}
+  .bottom-bar .spons-row{gap:6px}
+  .bottom-bar .spons{padding:6px 8px;border-radius:9px;gap:8px}
+  .bottom-bar .spons-icon{width:22px;height:22px;border-radius:7px}
+  .bottom-bar .spons-icon svg{width:12px;height:12px}
+  .bottom-bar .spons-name{font-size:11px}
+  .bottom-bar .spons-tag{font-size:9px;line-height:1.25;-webkit-line-clamp:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  /* legal sits inside the bar — strip its own positioning/blur */
+  .bottom-bar .legal{
+    position:static;width:auto;max-width:none;margin:0;
+    padding:6px var(--page-pad) 8px;
+    background:none;border-top:none;box-shadow:none;
+    -webkit-backdrop-filter:none;backdrop-filter:none;
   }
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-    .legal{background:var(--bg)}
+    .bottom-bar{background:var(--bg)}
   }
   .wordmark{margin-bottom:20px;padding-right:52px}
   .tabs-wrap{width:100%;max-width:100%;margin:0 0 22px;transform:none;overflow:hidden}
@@ -1075,6 +1100,7 @@ html[data-anim="off"] .tab-indicator.live{transition:none!important}
 </footer>
 </main>
 
+<div class="bottom-bar">
 <div class="spons-block">
   <div class="spons-head">
     <span class="spons-lbl">Sponsored</span>
@@ -1108,6 +1134,7 @@ html[data-anim="off"] .tab-indicator.live{transition:none!important}
   </div>
 </div>
 <div class="legal"><span class="legal-brand">&copy; 2026 SUB&amp;SUB LLC<span class="sep">·</span></span><a href="about.html">About</a><span class="sep">·</span><a href="privacy.html">Privacy Policy</a></div>
+</div><!-- /.bottom-bar -->
 
 <!-- ══ THEME TOGGLE ══ -->
 <button id="theme-btn" class="theme-btn" aria-label="Color theme"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg></button>
