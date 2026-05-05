@@ -471,6 +471,24 @@ html[data-legal="off"] .legal-brand{display:none}
 .tp-spons-name{font-size:11px;font-weight:600;color:var(--fg);letter-spacing:-.01em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tp-spons-tag{font-size:9.5px;color:var(--fg-dim);font-family:var(--mono);letter-spacing:.01em;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 
+/* page-bottom sponsored row — sits OUTSIDE <main>, just above the .legal bar.
+   Mirrors the .tp-spons sizing 1:1 so each card looks like the theme-panel
+   sponsored tile; container is narrower than the tools shell so the buttons
+   themselves end up smaller and narrower. */
+.spons-block{width:min(520px,calc(100vw - (var(--page-pad) * 2)));margin-top:28px}
+.spons-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.spons-lbl{font-family:var(--mono);font-size:10.5px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-dim)}
+.spons-ad-tag{font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.14em;color:var(--fg-dim);background:var(--bg);border:1px solid var(--line-2);border-radius:5px;padding:2px 5px 1px;line-height:1}
+.spons-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.spons{display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--bg-sub);border:1px solid var(--line);border-radius:11px;text-decoration:none;color:inherit;transition:background .15s,border-color .15s,transform .12s;min-width:0}
+.spons:hover{background:var(--hover);border-color:var(--line-hover)}
+.spons:active{transform:translateY(1px)}
+.spons-icon{width:26px;height:26px;border-radius:8px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;flex-shrink:0}
+.spons-icon svg{width:14px;height:14px}
+.spons-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.spons-name{font-size:11px;font-weight:600;color:var(--fg);letter-spacing:-.01em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spons-tag{font-size:9.5px;color:var(--fg-dim);font-family:var(--mono);letter-spacing:.01em;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+
 /* ══ DARK MODE ══ */
 [data-mode="dark"]{--bg:oklch(0.145 0.014 85);--bg-sub:oklch(0.20 0.016 85);--surface:oklch(0.245 0.016 85);--hover:oklch(0.30 0.018 85);--line:oklch(0.36 0.016 85);--line-2:oklch(0.29 0.014 85);--line-hover:oklch(0.50 0.018 85);--fg:oklch(0.95 0.006 85);--fg-mid:oklch(0.76 0.010 85);--fg-dim:oklch(0.62 0.010 85);--warn-bg:oklch(0.25 0.06 65);--danger-bg:oklch(0.24 0.07 25);--danger-line:oklch(0.45 0.11 25);--add-bg:oklch(0.25 0.07 145);--add-fg:oklch(0.80 0.14 145);--del-bg:oklch(0.24 0.07 25);--del-fg:oklch(0.80 0.16 25);--mark:oklch(0.42 0.11 85)}
 /* component backgrounds */
@@ -1056,6 +1074,39 @@ html[data-anim="off"] .tab-indicator.live{transition:none!important}
   <span id="footer-ref">RFC 4648</span>
 </footer>
 </main>
+
+<div class="spons-block">
+  <div class="spons-head">
+    <span class="spons-lbl">Sponsored</span>
+    <span class="spons-ad-tag">AD</span>
+  </div>
+  <div class="spons-row">
+    <a class="spons" href="https://t.me/buthisbot" target="_blank" rel="noopener sponsored nofollow">
+      <span class="spons-icon" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.5 1.5L1.5 7l4.8 1.7L13 3.2 7.7 9.6v3.9l2.4-2.6 3.5 2.6 1-11.9z"/>
+        </svg>
+      </span>
+      <span class="spons-text">
+        <span class="spons-name">Cloudbot</span>
+        <span class="spons-tag">Record any livestream with chat, 24/7</span>
+      </span>
+    </a>
+    <a class="spons" href="https://took.tv" target="_blank" rel="noopener sponsored nofollow">
+      <span class="spons-icon" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="12" height="7" rx="2.5"/>
+          <path d="M5 8.5h2M6 7.5v2"/>
+          <circle cx="10.5" cy="8.5" r=".9" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span class="spons-text">
+        <span class="spons-name">TookHub</span>
+        <span class="spons-tag">Play mini games</span>
+      </span>
+    </a>
+  </div>
+</div>
 <div class="legal"><span class="legal-brand">&copy; 2026 SUB&amp;SUB LLC<span class="sep">·</span></span><a href="about.html">About</a><span class="sep">·</span><a href="privacy.html">Privacy Policy</a></div>
 
 <!-- ══ THEME TOGGLE ══ -->

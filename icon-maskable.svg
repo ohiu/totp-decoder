@@ -1,19 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tools">
-  <defs>
-    <clipPath id="frontPanelM">
-      <rect x="184" y="184" width="232" height="232" rx="40"/>
-    </clipPath>
-  </defs>
   <!-- full-bleed background so PWA mask cropping never shows transparency -->
   <rect width="512" height="512" fill="#f6f8f4"/>
-  <!-- back panel (outline) -->
-  <rect x="120" y="120" width="232" height="232" rx="40" fill="none" stroke="#1a1d18" stroke-width="28"/>
-  <!-- front panel (filled) -->
-  <rect x="184" y="184" width="232" height="232" rx="40" fill="#1a1d18"/>
-  <!-- corner of back panel showing through the front, clipped to front shape -->
-  <g clip-path="url(#frontPanelM)">
-    <rect x="120" y="120" width="232" height="232" rx="40" fill="none" stroke="#f6f8f4" stroke-width="28"/>
-  </g>
-  <!-- accent dot -->
-  <circle cx="232" cy="232" r="12" fill="#f6f8f4"/>
+  <!-- centered filled panel (inside maskable safe zone) -->
+  <rect x="140" y="140" width="232" height="232" rx="40" fill="#1a1d18"/>
+  <!-- accent dot, kept at original 48-unit offset from panel top-left -->
+  <circle cx="188" cy="188" r="12" fill="#f6f8f4"/>
 </svg>
