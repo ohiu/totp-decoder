@@ -85,51 +85,14 @@ a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;t
 a:hover{border-bottom-color:var(--accent)}
 code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px solid var(--line-2);padding:1px 6px;border-radius:5px}
 .callout{background:var(--bg-sub);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:14px 16px;margin:18px 0;font-size:13.5px;color:var(--fg-mid);line-height:1.55}
-/* frosted-glass legal bar pinned to viewport bottom on every screen — same
-   visual treatment as index.html and privacy.html so the three pages match. */
-.legal{
-  position:fixed;left:0;right:0;bottom:0;z-index:8500;
-  width:auto;max-width:none;margin:0;
-  padding:10px var(--page-pad) 8px;
-  text-align:center;font-family:var(--mono);font-size:10px;
-  color:var(--fg-mid);letter-spacing:.14em;text-transform:uppercase;
-  background:color-mix(in oklch, var(--bg) 55%, transparent);
-  -webkit-backdrop-filter:saturate(140%) blur(8px);
-          backdrop-filter:saturate(140%) blur(8px);
-  border-top:1px solid var(--line-2);
-  box-shadow:0 -4px 18px oklch(0 0 0 / .04);
-}
-@media (display-mode: standalone){
-  .legal{display:none !important}
-  body{padding-bottom:calc(env(safe-area-inset-bottom) + 14px) !important}
-}
-/* Domain-gated copyright: the © SUB&SUB LLC text only shows on the
-   primary brand domain. Other-domain visitors still see the About /
-   Privacy links so they can reach those pages. Set by the early
-   <head> script via <html data-legal>. */
-html[data-legal="off"] .legal-brand{display:none}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .legal{background:var(--bg)}
-}
-.legal a{color:inherit;text-decoration:none;transition:color .15s}
-.legal a:hover{color:var(--fg)}
-.legal .sep{margin:0 8px;opacity:.6}
-body{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
 @media(max-width:640px){
   :root{--page-pad:16px}
-  body{padding-top:calc(18px + env(safe-area-inset-top));padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+  body{padding-top:calc(18px + env(safe-area-inset-top))}
   .shell{width:auto;max-width:100%;margin:0 0 auto}
   h1{font-size:22px}
   p,li{font-size:15px}
 }
 </style>
-<!-- Resolve the legal-bar gate before first paint so non-canonical
-     domains never flash the strip. Mirrors the same gate in index.html
-     and privacy.html. -->
-<script>
-document.documentElement.setAttribute('data-legal',
-  location.hostname.toLowerCase()==='tool.subnsub.com'?'on':'off');
-</script>
 </head>
 <body>
 <main class="shell">
@@ -328,7 +291,5 @@ document.documentElement.setAttribute('data-legal',
     Reach out at <a href="mailto:5@200000.live">5@200000.live</a>.
   </p>
 </main>
-
-<div class="legal"><span class="legal-brand">&copy; 2026 SUB&amp;SUB LLC<span class="sep">&middot;</span></span><a href="index.html">Tools</a><span class="sep">&middot;</span><a href="privacy.html">Privacy Policy</a></div>
 </body>
 </html>
