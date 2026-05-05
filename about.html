@@ -85,6 +85,19 @@ a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;t
 a:hover{border-bottom-color:var(--accent)}
 code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px solid var(--line-2);padding:1px 6px;border-radius:5px}
 .callout{background:var(--bg-sub);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:14px 16px;margin:18px 0;font-size:13.5px;color:var(--fg-mid);line-height:1.55}
+/* sponsored tiles pinned to bottom of content — labelled "AD" per disclosure */
+.spons-block{margin-top:34px;padding-top:24px;border-top:1px solid var(--line-2)}
+.spons-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.spons-lbl{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-dim)}
+.ad-tag{font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.14em;color:var(--fg-dim);background:var(--bg);border:1px solid var(--line-2);border-radius:5px;padding:2px 5px 1px;line-height:1}
+.spons{display:flex;align-items:center;gap:11px;padding:11px 13px;background:var(--bg-sub);border:1px solid var(--line);border-radius:11px;text-decoration:none;color:inherit;transition:background .15s,border-color .15s,transform .12s;margin:0 0 8px}
+.spons:hover{background:var(--surface);border-color:var(--line-hover)}
+.spons:active{transform:translateY(1px)}
+.spons-icon{width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;flex-shrink:0}
+.spons-icon svg{width:16px;height:16px}
+.spons-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.spons-name{font-size:12.5px;font-weight:600;color:var(--fg);letter-spacing:-.01em;line-height:1.2}
+.spons-tag{font-size:11px;color:var(--fg-dim);font-family:var(--mono);letter-spacing:.01em;line-height:1.4}
 @media(max-width:640px){
   :root{--page-pad:16px}
   body{padding-top:calc(18px + env(safe-area-inset-top))}
@@ -290,6 +303,37 @@ code{font-family:var(--mono);font-size:.92em;background:var(--bg-sub);border:1px
     Questions, bug reports, or suggestions for tools you would like to see added?
     Reach out at <a href="mailto:5@200000.live">5@200000.live</a>.
   </p>
+
+  <div class="spons-block">
+    <div class="spons-head">
+      <span class="spons-lbl">Sponsored</span>
+      <span class="ad-tag">AD</span>
+    </div>
+    <a class="spons" href="https://t.me/buthisbot" target="_blank" rel="noopener sponsored nofollow">
+      <span class="spons-icon" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.5 1.5L1.5 7l4.8 1.7L13 3.2 7.7 9.6v3.9l2.4-2.6 3.5 2.6 1-11.9z"/>
+        </svg>
+      </span>
+      <span class="spons-text">
+        <span class="spons-name">Cloudbot</span>
+        <span class="spons-tag">Use this bot to record every livestream 24/7</span>
+      </span>
+    </a>
+    <a class="spons" href="https://took.tv" target="_blank" rel="noopener sponsored nofollow">
+      <span class="spons-icon" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="12" height="7" rx="2.5"/>
+          <path d="M5 8.5h2M6 7.5v2"/>
+          <circle cx="10.5" cy="8.5" r=".9" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span class="spons-text">
+        <span class="spons-name">TookHub</span>
+        <span class="spons-tag">Play mini games</span>
+      </span>
+    </a>
+  </div>
 </main>
 </body>
 </html>
