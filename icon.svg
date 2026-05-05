@@ -1,5 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tools">
-  <rect width="512" height="512" rx="112" fill="#f6f8f4"/>
-  <rect x="64" y="64" width="384" height="384" rx="64" fill="#1a1d18"/>
+  <!-- Outer cream squircle: 2 cubic Béziers per corner so the curvature
+       transitions smoothly from straight edge → 45° apex → straight edge
+       (visually G2-continuous, like an iOS app-icon shape) -->
+  <path d="M 116 0 H 396 C 437 0 462 8 478 24 C 500 46 512 71 512 116 V 396 C 512 437 504 462 488 478 C 466 500 441 512 396 512 H 116 C 75 512 50 504 34 488 C 12 466 0 441 0 396 V 116 C 0 75 8 50 24 34 C 46 12 71 0 116 0 Z" fill="#f6f8f4"/>
+  <!-- Inner black squircle, same construction at smaller scale -->
+  <path d="M 140 64 H 372 C 400 64 416 70 426 80 C 442 96 448 116 448 140 V 372 C 448 400 442 416 432 426 C 416 442 400 448 372 448 H 140 C 112 448 96 442 86 432 C 70 416 64 400 64 372 V 140 C 64 112 70 96 80 86 C 96 70 112 64 140 64 Z" fill="#1a1d18"/>
+  <!-- Accent dot -->
   <circle cx="140" cy="140" r="20" fill="#f6f8f4"/>
 </svg>

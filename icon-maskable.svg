@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tools">
   <!-- full-bleed background so PWA mask cropping never shows transparency -->
   <rect width="512" height="512" fill="#f6f8f4"/>
-  <!-- centered filled panel, sized at 62.5% so it stays inside the
-       maskable safe zone (inner 80% of canvas) under any mask shape -->
-  <rect x="96" y="96" width="320" height="320" rx="56" fill="#1a1d18"/>
-  <!-- accent dot, 20% inset from panel top-left -->
+  <!-- centered black squircle (G2-continuous corners), 320×320 inside the
+       maskable safe zone -->
+  <path d="M 160 96 H 352 C 374 96 384 100 392 108 C 408 124 416 134 416 160 V 352 C 416 374 410 384 402 392 C 388 408 374 416 352 416 H 160 C 138 416 128 410 120 402 C 104 388 96 374 96 352 V 160 C 96 138 102 128 110 120 C 124 104 138 96 160 96 Z" fill="#1a1d18"/>
+  <!-- accent dot -->
   <circle cx="160" cy="160" r="16" fill="#f6f8f4"/>
 </svg>
